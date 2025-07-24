@@ -1,73 +1,89 @@
 # 🎓 AI Agent Education Platform
 
-An innovative educational platform that allows teachers to create business simulations with AI agents, helping students learn through interactive scenarios. Inspired by modern AI-driven education and built with cutting-edge technology.
+An innovative educational platform that transforms business case studies into immersive AI-powered simulations. Upload PDF case studies, let AI extract key figures and scenarios, then engage students in **linear simulation experiences** with dynamic **ChatOrchestrator** system and intelligent **AI persona interactions**.
 
 ![AI Agent Education Platform](https://img.shields.io/badge/AI-Education-blue?style=for-the-badge)
-![React](https://img.shields.io/badge/React-TypeScript-61DAFB?style=for-the-badge&logo=react)
+![Next.js](https://img.shields.io/badge/Next.js-TypeScript-000000?style=for-the-badge&logo=nextdotjs)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=for-the-badge&logo=fastapi)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791?style=for-the-badge&logo=postgresql)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-412991?style=for-the-badge&logo=openai)
 
 ## 🌟 Features
 
-### 📋 **Scenario Management**
-- **Pre-defined Business Scenarios**: Ready-to-use scenarios like EcoFriendly Product Launch, Healthcare Innovation, FinTech Startup
-- **PDF Case Study Upload**: Upload Harvard Business Review cases or custom PDFs for AI analysis
-- **Custom Scenario Creation**: Build your own business challenges with learning objectives
+### 📄 **PDF-to-Simulation Pipeline**
+- **Intelligent PDF Processing**: Upload Harvard Business Review cases or any business case study PDF
+- **AI Content Analysis**: LlamaParse + OpenAI GPT-4 extract scenarios, key figures, and learning objectives
+- **Automatic Persona Generation**: AI creates realistic business personas with personality traits and backgrounds
+- **Scene Creation**: Generate sequential learning scenes with clear objectives and visual imagery
 
-### 🤖 **AI Agent Creation**
-- **Intelligent Agent Design**: Create AI agents with unique personalities and expertise
-- **Role-Based Specialists**: Marketing, Finance, Product, Operations experts
-- **Customizable Personalities**: Define communication styles, responsibilities, and decision-making criteria
-- **Real-time Agent Configuration**: Interactive forms with live preview
+### 🎭 **ChatOrchestrator System**
+- **Linear Simulation Flow**: Structured multi-scene progression with clear learning objectives
+- **AI Persona Interactions**: Dynamic conversations with AI characters based on personality traits
+- **Smart Command System**: Built-in commands (`begin`, `help`, `@mentions`) for natural interaction
+- **Adaptive Difficulty**: Intelligent hint system and scene progression based on student performance
 
-### 🎮 **Interactive Simulations**
-- **Live Business Simulations**: Students interact with AI agents in real-time
-- **Multi-Agent Collaboration**: Agents work together to solve business challenges
-- **Progress Tracking**: Monitor student decisions and learning outcomes
-- **Dynamic Scenarios**: Adaptive storylines based on student choices
+### 🎮 **Immersive Learning Experiences**
+- **Multi-Scene Progression**: Students advance through carefully designed business scenarios
+- **Goal-Oriented Learning**: Each scene has specific objectives and success criteria
+- **Real-Time Feedback**: AI assesses understanding and provides contextual hints
+- **Progress Tracking**: Comprehensive analytics on learning outcomes and engagement
+
+### 🏪 **Community Marketplace**
+- **Scenario Sharing**: Publish successful simulations for the educational community
+- **Content Discovery**: Browse scenarios by industry, difficulty, and user ratings
+- **Remix & Customize**: Clone and adapt existing scenarios for specific needs
+- **Quality Assurance**: Community ratings and reviews ensure high-quality content
 
 ### 🎨 **Modern UI/UX**
-- **n-aible Design System**: Professional, clean interface inspired by modern AI companies
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
-- **Accessibility First**: WCAG compliant with keyboard navigation support
-- **Dark/Light Mode**: Adaptive interface for different preferences
+- **Next.js 14 with TypeScript**: Server-side rendering for optimal performance
+- **Tailwind CSS + shadcn/ui**: Professional, accessible component library
+- **Responsive Design**: Seamless experience across desktop, tablet, and mobile
+- **Real-Time Chat Interface**: Immersive conversation experience with AI personas
 
 ## 🏗️ Architecture
 
 ```mermaid
 graph TB
-    A[React Frontend] --> B[FastAPI Backend]
+    A[Next.js Frontend] --> B[FastAPI Backend]
     B --> C[PostgreSQL Database]
-    B --> D[OpenAI API]
-    B --> E[Anthropic Claude API]
-    B --> F[PDF Processing Service]
+    B --> D[OpenAI GPT-4]
+    B --> E[LlamaParse API]
+    B --> F[ChatOrchestrator]
     
-    subgraph "Frontend (React + TypeScript)"
-        G[Scenario Builder]
-        H[Agent Creator]
-        I[Simulation Runner]
-        J[Real-time Chat]
+    subgraph "Frontend (Next.js + TypeScript)"
+        G[PDF Upload Interface]
+        H[Scenario Builder]
+        I[Chat-Box Experience]
+        J[Marketplace]
     end
     
     subgraph "Backend (FastAPI + Python)"
-        K[REST API]
-        L[AI Service Layer]
-        M[Simulation Engine]
-        N[PDF Processor]
+        K[PDF Processing API]
+        L[Linear Simulation API]
+        M[ChatOrchestrator Engine]
+        N[Publishing System]
+    end
+    
+    subgraph "AI Processing Layer"
+        O[PDF Analysis]
+        P[Persona Generation]
+        Q[Scene Creation]
+        R[Image Generation]
     end
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js** (v16 or higher)
-- **Python** (3.9 or higher)
-- **PostgreSQL** (v12 or higher)
-- **OpenAI API Key** (for AI agent functionality)
+- **Node.js** (v18 or higher)
+- **Python** (3.11 or higher)
+- **PostgreSQL** (v14 or higher)
+- **OpenAI API Key** (for ChatOrchestrator and content generation)
+- **LlamaParse API Key** (for PDF processing)
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/ai-agent-education-platform.git
+git clone https://github.com/HendrikKrack/ai-agent-education-platform.git
 cd ai-agent-education-platform
 ```
 
@@ -87,19 +103,20 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
+pip install PyPDF2  # Additional dependency for PDF processing
 
 # Set up environment variables
-cp env_template.txt .env
-# Edit .env with your database and API keys
+copy env_template.txt .env
+# Edit .env with your API keys:
+# OPENAI_API_KEY=your_openai_api_key
+# LLAMAPARSE_API_KEY=your_llamaparse_api_key
+# DATABASE_URL=postgresql://username:password@localhost:5432/ai_education
 
 # Create database tables
 python recreate_db.py
 
-# Create default scenarios
-python create_default_scenarios.py
-
 # Start the backend server
-python main.py
+uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 The backend will be available at **http://localhost:8000**
@@ -107,13 +124,13 @@ The backend will be available at **http://localhost:8000**
 ### 3. Frontend Setup
 ```bash
 # Navigate to frontend directory (in a new terminal)
-cd frontend
+cd frontend/ai-agent-platform
 
 # Install dependencies
 npm install
 
 # Start the development server
-npm start
+npm run dev
 ```
 
 The frontend will be available at **http://localhost:3000**
@@ -122,17 +139,27 @@ The frontend will be available at **http://localhost:3000**
 
 ### Backend (.env)
 ```env
+# Database Configuration
 DATABASE_URL=postgresql://username:password@localhost:5432/ai_education
+
+# AI Service API Keys
 OPENAI_API_KEY=your_openai_api_key_here
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+LLAMAPARSE_API_KEY=your_llamaparse_api_key_here
+
+# Application Settings
 SECRET_KEY=your_secret_key_here
 ENVIRONMENT=development
+DEBUG=true
+
+# Optional: Image Generation
+DALLE_API_KEY=your_dalle_api_key_here
 ```
 
 ### Database Setup
-1. Create a PostgreSQL database
+1. Create a PostgreSQL database named `ai_education`
 2. Update the `DATABASE_URL` in your `.env` file
-3. Run the database setup scripts
+3. Run `python recreate_db.py` to create tables
+4. The system will automatically create default scenarios
 
 ## 📚 API Documentation
 
@@ -142,94 +169,135 @@ Once the backend is running, visit:
 
 ### Key Endpoints
 ```
-GET  /scenarios/              # List all scenarios
-POST /scenarios/              # Create new scenario
-POST /scenarios/upload-pdf/   # Upload PDF case study
-GET  /scenarios/{id}/agents/  # Get agents for scenario
-POST /agents/                 # Create new agent
-POST /simulations/            # Start simulation
-POST /simulations/{id}/interact/  # Chat with agents
+# PDF Processing & Scenario Creation
+POST /api/parse-pdf/                    # Upload and process PDF case study
+GET  /scenarios/                        # List all scenarios
+GET  /scenarios/{id}                    # Get scenario with personas and scenes
+
+# Linear Simulation System
+POST /api/simulation/start              # Initialize ChatOrchestrator simulation
+POST /api/simulation/linear-chat        # Chat with AI personas in simulation
+
+# Legacy Business Simulation
+POST /api/simulate/                     # Phase-based business simulation
+
+# Community Marketplace
+POST /api/publishing/publish-scenario   # Publish scenario to marketplace
+GET  /api/publishing/marketplace        # Browse published scenarios
+
+# System Health
+GET  /health/                           # System health check
 ```
 
 ## 🎓 Usage Guide
 
-### For Teachers
+### For Educators
 
-1. **Create/Select Scenario**
-   - Choose from pre-built scenarios
-   - Upload your own PDF case studies
-   - Build custom business challenges
+1. **Upload Business Case Study**
+   - Upload PDF case studies (Harvard Business Review, custom cases)
+   - AI automatically extracts scenarios, key figures, and learning objectives
+   - Review and customize generated personas and scenes
 
-2. **Design AI Agents**
-   - Configure agent personalities
-   - Set expertise areas and responsibilities
-   - Define decision-making criteria
+2. **Launch Linear Simulation**
+   - Students progress through structured scenes with clear objectives
+   - ChatOrchestrator manages multi-persona interactions
+   - Monitor student progress and learning outcomes
 
-3. **Launch Simulation**
-   - Students interact with AI agents
-   - Monitor progress and decisions
-   - Review learning outcomes
+3. **Publish to Community**
+   - Share successful scenarios with other educators
+   - Set difficulty levels, categories, and learning objectives
+   - Receive community feedback and ratings
 
 ### For Students
 
-1. **Join Simulation**
-   - Access scenario overview
-   - Understand business challenge
-   - Review learning objectives
+1. **Start Simulation Experience**
+   - Review scenario overview and learning objectives
+   - Understand your role in the business challenge
+   - Meet AI personas and their backgrounds
 
-2. **Interact with Agents**
-   - Chat with AI specialists
-   - Make business decisions
-   - Collaborate on solutions
+2. **Engage with ChatOrchestrator**
+   - Type `begin` to start the simulation
+   - Use `@mentions` to interact with specific personas
+   - Type `help` for available commands and guidance
 
-3. **Learn and Reflect**
-   - Receive real-time feedback
-   - See decision impacts
-   - Complete learning assessments
+3. **Progress Through Scenes**
+   - Complete objectives in each scene to advance
+   - Receive real-time feedback and hints
+   - Build understanding through natural conversation
+
+### Example Simulation Flow
+```
+Student: begin
+ChatOrchestrator: Welcome to KasKazi Network Strategic Challenge...
+
+Student: @wanjohi What are your main concerns about seasonal contracts?
+Wanjohi: As the founder, I'm deeply concerned about our revenue gaps...
+
+Student: What alternatives have you considered?
+ChatOrchestrator: [Multiple personas respond with different perspectives]
+
+Student: help
+ChatOrchestrator: Available commands: @mention, progress, hint...
+```
 
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **React 19** with TypeScript
-- **TailwindCSS** for styling
-- **React Router** for navigation
-- **Axios** for API communication
-- **Vite** for build tooling
+- **Next.js 14** with TypeScript and App Router
+- **Tailwind CSS** for utility-first styling
+- **shadcn/ui** for modern, accessible components
+- **React Hook Form** for form management
+- **Zustand** for state management
 
 ### Backend
-- **FastAPI** (Python web framework)
-- **SQLAlchemy** (ORM)
-- **PostgreSQL** (Database)
-- **Pydantic** (Data validation)
-- **Uvicorn** (ASGI server)
+- **FastAPI** with async Python for high performance
+- **SQLAlchemy** ORM with PostgreSQL
+- **Pydantic** for data validation and serialization
+- **Uvicorn** ASGI server with hot reloading
 
 ### AI Services
-- **OpenAI GPT-4** for agent intelligence
-- **Anthropic Claude** for enhanced reasoning
-- **Custom PDF processing** for case study analysis
+- **OpenAI GPT-4** for ChatOrchestrator and content generation
+- **LlamaParse** for advanced PDF processing and content extraction
+- **AI Image Generation** for scene visualization
+- **Custom ChatOrchestrator** for linear simulation management
+
+### Database
+- **PostgreSQL** with JSONB support for flexible data storage
+- **Alembic** for database migrations
+- **Connection pooling** for optimal performance
 
 ## 📁 Project Structure
 
 ```
 ai-agent-education-platform/
 ├── backend/
-│   ├── models.py              # Database models
-│   ├── schemas.py             # Pydantic schemas
-│   ├── main.py               # FastAPI application
-│   ├── database.py           # Database configuration
+│   ├── main.py                       # FastAPI application entry point
+│   ├── database/
+│   │   ├── models.py                 # SQLAlchemy models (scenarios, personas, scenes)
+│   │   ├── schemas.py                # Pydantic schemas for API validation
+│   │   └── migrations/               # Database migration files
+│   ├── api/
+│   │   ├── parse_pdf.py             # PDF processing endpoints
+│   │   ├── simulation.py            # Linear simulation endpoints
+│   │   ├── chat_orchestrator.py     # ChatOrchestrator logic
+│   │   └── publishing.py            # Marketplace publishing
 │   ├── services/
-│   │   ├── ai_service.py     # AI agent logic
-│   │   ├── pdf_processor.py  # PDF analysis
-│   │   └── simulation_engine.py  # Simulation logic
-│   └── requirements.txt      # Python dependencies
-├── frontend/
-│   ├── src/
-│   │   ├── components/       # React components
-│   │   ├── services/         # API service layer
-│   │   └── App.tsx          # Main application
-│   ├── public/              # Static assets
-│   └── package.json         # Node dependencies
-└── README.md               # This file
+│   │   └── simulation_engine.py     # Core simulation business logic
+│   └── docs/                        # Comprehensive API documentation
+├── frontend/ai-agent-platform/
+│   ├── app/
+│   │   ├── chat-box/                # Linear simulation interface
+│   │   ├── scenario-builder/        # PDF upload and scenario creation
+│   │   ├── marketplace/             # Community scenario discovery
+│   │   └── dashboard/               # User progress and analytics
+│   ├── components/
+│   │   ├── ui/                      # shadcn/ui components
+│   │   ├── PersonaCard.tsx          # AI persona display components
+│   │   └── SceneCard.tsx            # Scene progression UI
+│   └── lib/                         # Utility functions and API clients
+├── CHAT_ORCHESTRATOR_INTEGRATION.md # Integration documentation
+├── QUICK_START.md                   # Quick setup guide
+└── README.md                        # This file
 ```
 
 ## 🤝 Contributing
@@ -244,9 +312,10 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 5. Open a Pull Request
 
 ### Code Style
-- **Python**: Follow PEP 8 with Black formatting
-- **TypeScript**: Use Prettier with ESLint
+- **Python**: Follow PEP 8 with Black formatting and type hints
+- **TypeScript**: Use Prettier with ESLint and strict TypeScript
 - **Commits**: Use conventional commits format
+- **Testing**: Write tests for new features and maintain 80%+ coverage
 
 ## 📝 License
 
@@ -254,30 +323,54 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🌟 Acknowledgments
 
-- Inspired by **n-aible**'s innovative approach to AI education
-- Built with modern web technologies and AI APIs
-- Designed for educators and students worldwide
+- **OpenAI GPT-4** for powering intelligent ChatOrchestrator interactions
+- **LlamaParse** for advanced PDF processing and content extraction
+- **shadcn/ui** for beautiful, accessible React components
+- **FastAPI** for high-performance async Python web framework
+- **Next.js** for modern React development with server-side rendering
 
 ## 📞 Support
 
-- **Documentation**: [Wiki](../../wiki)
+- **Quick Start Guide**: [QUICK_START.md](QUICK_START.md)
+- **Integration Documentation**: [CHAT_ORCHESTRATOR_INTEGRATION.md](CHAT_ORCHESTRATOR_INTEGRATION.md)
+- **API Reference**: [backend/docs/API_Reference.md](backend/docs/API_Reference.md)
+- **Architecture Documentation**: [backend/docs/architecture/](backend/docs/architecture/)
 - **Issues**: [GitHub Issues](../../issues)
 - **Discussions**: [GitHub Discussions](../../discussions)
 
 ## 🗺️ Roadmap
 
-- [ ] **Mobile App** (React Native)
-- [ ] **Advanced Analytics** (Student performance tracking)
-- [ ] **Multi-language Support** (i18n)
-- [ ] **Voice Interaction** (Speech-to-text with agents)
-- [ ] **VR/AR Integration** (Immersive simulations)
+### Phase 1: Core Platform (✅ Complete)
+- [x] **PDF-to-Simulation Pipeline** with AI processing
+- [x] **ChatOrchestrator Integration** with linear simulation flow
+- [x] **Multi-Scene Progression** with goal tracking
+- [x] **Community Marketplace** with publishing system
+
+### Phase 2: Enhanced Learning (🚧 In Progress)
+- [ ] **Advanced Analytics Dashboard** for educators
+- [ ] **Learning Outcome Assessment** with AI evaluation
+- [ ] **Multi-User Simulations** for collaborative learning
+- [ ] **Voice Interaction** with AI personas
+
+### Phase 3: Enterprise Features (🔮 Planned)
 - [ ] **LMS Integration** (Canvas, Blackboard, Moodle)
+- [ ] **SSO Authentication** for institutional use
+- [ ] **White-Label Solutions** for educational institutions
+- [ ] **Mobile Native Apps** (iOS/Android)
+
+### Phase 4: Advanced AI (🔮 Future)
+- [ ] **Custom Model Training** for domain-specific scenarios
+- [ ] **VR/AR Integration** for immersive experiences
+- [ ] **Multi-Language Support** with i18n
+- [ ] **Real-Time Collaboration** with WebRTC
 
 ---
 
 <div align="center">
 
 **[⭐ Star this repository](../../stargazers) • [🐛 Report Bug](../../issues) • [✨ Request Feature](../../issues)**
+
+**Transform business education with AI-powered simulations**
 
 Made with ❤️ for educators and students worldwide
 

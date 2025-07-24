@@ -2,9 +2,9 @@
 
 ## Platform Vision
 
-The CrewAI Agent Builder Platform is a comprehensive community-driven marketplace and educational platform where users can create, share, and simulate with AI agents. It combines the power of CrewAI framework with a robust community ecosystem, enabling business professionals, educators, and developers to collaborate on AI-powered solutions.
+The **AI Agent Education Platform** is a comprehensive educational platform where users can transform business case studies into immersive AI-powered simulations. The platform combines **PDF-to-simulation pipeline** with an integrated **ChatOrchestrator** system, enabling educators and students to create and experience linear, multi-scene business simulations with dynamic AI persona interactions.
 
-**The platform architecture aligns with [CrewAI's paradigm](https://docs.crewai.com/en/introduction) where scenarios contain tasks, agents provide capabilities, and crews organize collaborative work.** This alignment ensures that tasks are contextual to business scenarios, agents are reusable across different contexts, and collaboration happens naturally through crew coordination.
+**The platform architecture focuses on educational effectiveness through structured learning experiences**, where PDF documents are intelligently processed to extract business scenarios, key figures become AI personas with distinct personalities, and students progress through carefully designed scenes with clear learning objectives.
 
 ## High-Level Architecture
 
@@ -12,15 +12,15 @@ The CrewAI Agent Builder Platform is a comprehensive community-driven marketplac
 graph TB
     subgraph "User Layer"
         WEB[Web Browser]
-        MOBILE[Mobile App]
-        API_CLIENT[API Clients]
+        MOBILE[Mobile Interface]
+        API_CLIENT[API Integration]
     end
     
     subgraph "Frontend Layer"
-        REACT[React App]
-        COMPONENTS[UI Components]
-        SERVICES[API Services]
-        ROUTING[React Router]
+        NEXTJS[Next.js Application]
+        CHATBOX[Chat-Box Interface]
+        SCENARIO_BUILDER[Scenario Builder]
+        MARKETPLACE[Marketplace UI]
     end
     
     subgraph "API Gateway"
@@ -30,75 +30,88 @@ graph TB
         RATE_LIMIT[Rate Limiting]
     end
     
-    subgraph "Backend Services"
+    subgraph "Core Services"
+        PDF_SERVICE[PDF Processing Service]
+        ORCHESTRATOR_SERVICE[ChatOrchestrator Service]
+        SCENARIO_SERVICE[Scenario Management]
+        PUBLISHING_SERVICE[Publishing Service]
         USER_SERVICE[User Management]
-        AGENT_SERVICE[Agent Management]
-        CREW_SERVICE[CrewAI Service]
-        SIMULATION_SERVICE[Simulation Engine]
-        TOOL_SERVICE[Tool Management]
-        COMMUNITY_SERVICE[Community Features]
     end
     
-    subgraph "AI/ML Layer"
-        CREWAI[CrewAI Framework]
-        CREW_ORCHESTRATOR[Crew Orchestrator]
-        TOOL_MANAGER[Tool Manager]
-        OPENAI[OpenAI API]
-        ANTHROPIC[Anthropic API]
-        EMBEDDING[Embedding Service]
+    subgraph "AI Processing Layer"
+        CHAT_ORCHESTRATOR[ChatOrchestrator Engine]
+        PDF_PROCESSOR[PDF Analysis Engine]
+        PERSONA_ENGINE[AI Persona Engine]
+        SCENE_MANAGER[Scene Progression Manager]
+        CONTENT_GENERATOR[Content Generation]
+    end
+    
+    subgraph "External AI Services"
+        OPENAI[OpenAI GPT-4]
+        LLAMAPARSE[LlamaParse API]
+        IMAGE_API[AI Image Generation]
+        EMBEDDING_API[Embedding Service]
     end
     
     subgraph "Data Layer"
         POSTGRES[(PostgreSQL Database)]
         REDIS[(Redis Cache)]
-        FILES[File Storage]
+        FILE_STORAGE[File Storage System]
     end
     
-    subgraph "External Services"
-        EMAIL[Email Service]
-        ANALYTICS[Analytics Service]
-        MONITORING[Monitoring Service]
+    subgraph "Infrastructure"
+        MONITORING[Monitoring & Analytics]
+        LOGGING[Centralized Logging]
+        BACKUP[Backup & Recovery]
     end
     
     %% Connections
-    WEB --> REACT
-    MOBILE --> REACT
+    WEB --> NEXTJS
+    MOBILE --> NEXTJS
     API_CLIENT --> FASTAPI
-    REACT --> COMPONENTS
-    REACT --> SERVICES
-    REACT --> ROUTING
-    SERVICES --> FASTAPI
+    
+    NEXTJS --> CHATBOX
+    NEXTJS --> SCENARIO_BUILDER
+    NEXTJS --> MARKETPLACE
+    
+    CHATBOX --> FASTAPI
+    SCENARIO_BUILDER --> FASTAPI
+    MARKETPLACE --> FASTAPI
     
     FASTAPI --> AUTH
     FASTAPI --> CORS
     FASTAPI --> RATE_LIMIT
     
     AUTH --> USER_SERVICE
-    USER_SERVICE --> AGENT_SERVICE
-    AGENT_SERVICE --> CREW_SERVICE
-    CREW_SERVICE --> SIMULATION_SERVICE
-    SIMULATION_SERVICE --> TOOL_SERVICE
-    TOOL_SERVICE --> COMMUNITY_SERVICE
+    FASTAPI --> PDF_SERVICE
+    FASTAPI --> ORCHESTRATOR_SERVICE
+    FASTAPI --> SCENARIO_SERVICE
+    FASTAPI --> PUBLISHING_SERVICE
     
-    SIMULATION_SERVICE --> CREWAI
-    CREW_SERVICE --> CREW_ORCHESTRATOR
-    CREW_ORCHESTRATOR --> TOOL_MANAGER
-    TOOL_MANAGER --> CREWAI
-    CREWAI --> OPENAI
-    CREWAI --> ANTHROPIC
-    AGENT_SERVICE --> EMBEDDING
+    PDF_SERVICE --> PDF_PROCESSOR
+    ORCHESTRATOR_SERVICE --> CHAT_ORCHESTRATOR
+    
+    PDF_PROCESSOR --> LLAMAPARSE
+    PDF_PROCESSOR --> OPENAI
+    PDF_PROCESSOR --> CONTENT_GENERATOR
+    
+    CHAT_ORCHESTRATOR --> PERSONA_ENGINE
+    CHAT_ORCHESTRATOR --> SCENE_MANAGER
+    PERSONA_ENGINE --> OPENAI
+    CONTENT_GENERATOR --> IMAGE_API
     
     USER_SERVICE --> POSTGRES
-    AGENT_SERVICE --> POSTGRES
-    SIMULATION_SERVICE --> POSTGRES
-    COMMUNITY_SERVICE --> POSTGRES
+    SCENARIO_SERVICE --> POSTGRES
+    PUBLISHING_SERVICE --> POSTGRES
+    ORCHESTRATOR_SERVICE --> POSTGRES
     
     FASTAPI --> REDIS
-    USER_SERVICE --> FILES
+    PDF_PROCESSOR --> FILE_STORAGE
+    CONTENT_GENERATOR --> FILE_STORAGE
     
-    USER_SERVICE --> EMAIL
-    FASTAPI --> ANALYTICS
     FASTAPI --> MONITORING
+    FASTAPI --> LOGGING
+    POSTGRES --> BACKUP
 ```
 
 ## Detailed Backend Architecture
@@ -114,12 +127,11 @@ backend/
 ├── database/                    # Database layer
 │   ├── __init__.py
 │   ├── connection.py           # Database connection setup
-│   ├── models.py               # SQLAlchemy models
-│   ├── schemas.py              # Pydantic schemas
+│   ├── models.py               # SQLAlchemy models (scenarios, personas, scenes, user_progress)
+│   ├── schemas.py              # Pydantic schemas for API validation
 │   └── migrations/             # Database migrations
-│       ├── __init__.py
-│       ├── fix_database.py     # Migration scripts
-│       └── fix_test_database.py
+│       ├── add_simulation_system.py
+│       └── add_publishing_schema.py
 │
 ├── utilities/                   # Shared utilities
 │   ├── __init__.py
@@ -127,39 +139,27 @@ backend/
 │
 ├── services/                   # Core business services
 │   ├── __init__.py
-│   ├── ai_service.py          # Individual agent AI service
-│   ├── crewai_service.py      # CrewAI multi-agent orchestration
-│   ├── tool_manager.py        # Extensible tool management
-│   ├── pdf_processor.py       # PDF document processing
-│   └── simulation_engine.py   # Simulation execution engine
+│   └── simulation_engine.py   # Linear simulation orchestration
 │
 ├── api/                        # API layer organization
-│   └── __init__.py
-│
-├── crews/                      # CrewAI configurations
-│   ├── business_crew.py        # Business agent crew
-│   └── config/                 # Agent/task configurations
-│       ├── agents.yaml         # Agent definitions
-│       └── tasks.yaml          # Task definitions
+│   ├── __init__.py
+│   ├── chat_orchestrator.py   # ChatOrchestrator endpoint logic
+│   ├── parse_pdf.py           # PDF processing endpoints
+│   ├── simulation.py          # Linear simulation endpoints
+│   └── publishing.py          # Marketplace publishing endpoints
 │
 ├── unit_tests/                 # Comprehensive test suite
 │   ├── conftest.py            # Test fixtures and configuration
 │   ├── README.md              # Test documentation
 │   ├── 
 │   ├── auth/                  # Authentication tests
-│   │   ├── __init__.py
-│   │   └── test_authentication.py
-│   │
 │   ├── api/                   # API endpoint tests
-│   │   ├── __init__.py
-│   │   ├── test_scenarios.py
-│   │   ├── test_agents.py
-│   │   └── test_simulations.py
-│   │
+│   │   ├── test_pdf_processing.py
+│   │   ├── test_simulation.py
+│   │   └── test_orchestrator.py
 │   └── core/                  # Core functionality tests
-│       ├── __init__.py
 │       ├── test_health.py
-│       └── test_root.py
+│       └── test_linear_flow.py
 │
 └── docs/                      # Comprehensive documentation
     ├── API_Reference.md       # Complete API documentation
@@ -173,428 +173,377 @@ backend/
 
 ## Component Details
 
-### 1. FastAPI Application Layer
+### 1. PDF-to-Simulation Pipeline
 
 ```mermaid
 graph TD
-    A[main.py] --> B[FastAPI App Instance]
-    B --> C[CORS Middleware]
-    C --> D[Authentication Middleware]
-    D --> E[Rate Limiting Middleware]
-    E --> F[API Router]
+    A[PDF Upload] --> B[LlamaParse Processing]
+    B --> C[Content Extraction]
+    C --> D[AI Analysis & Processing]
+    D --> E[OpenAI GPT-4 Analysis]
+    E --> F[Generate Structured Data]
     
-    F --> G[User Endpoints]
-    F --> H[Agent Endpoints]
-    F --> I[Scenario Endpoints]
-    F --> J[Simulation Endpoints]
-    F --> K[Health Endpoints]
+    F --> G[Create Scenario]
+    F --> H[Extract Key Figures → Personas]
+    F --> I[Identify Learning Scenes]
+    F --> J[Generate Learning Objectives]
     
-    G --> L[User Management Service]
-    H --> M[Agent Management Service]
-    I --> N[Scenario Management Service]
-    J --> O[Simulation Engine Service]
-    K --> P[Health Check Service]
+    G --> K[Save to Database]
+    H --> L[Persona Personality Mapping]
+    I --> M[Scene Sequence Planning]
+    J --> N[Objective Validation]
+    
+    K --> O[Scenario Created]
+    L --> O
+    M --> O
+    N --> O
+    
+    O --> P[Ready for Simulation]
 ```
 
-### 2. Database Layer Architecture
+### 2. ChatOrchestrator Architecture
 
 ```mermaid
 graph LR
-    A[Database Layer] --> B[Connection Management]
-    A --> C[Model Definitions]
-    A --> D[Schema Validation]
-    A --> E[Migration Management]
+    A[ChatOrchestrator] --> B[System Prompt Manager]
+    A --> C[Scene State Manager]
+    A --> D[Persona Interaction Engine]
+    A --> E[Command Processor]
     
-    B --> B1[PostgreSQL Connection]
-    B --> B2[Connection Pooling]
-    B --> B3[Transaction Management]
+    B --> B1[Scenario Context]
+    B --> B2[Scene Objectives]
+    B --> B3[Persona Personalities]
+    B --> B4[Turn Management]
     
-    C --> C1[User Models]
-    C --> C2[Agent Models]
-    C --> C3[Scenario Models]
-    C --> C4[Simulation Models]
-    C --> C5[Community Models]
+    C --> C1[Current Scene Tracking]
+    C --> C2[Progress Monitoring]
+    C --> C3[Scene Transition Logic]
+    C --> C4[Goal Achievement Detection]
     
-    D --> D1[Request Schemas]
-    D --> D2[Response Schemas]
-    D --> D3[Validation Rules]
+    D --> D1[AI Persona Responses]
+    D --> D2[Personality-Based Interactions]
+    D --> D3[@Mention Handling]
+    D --> D4[Multi-Character Conversations]
     
-    E --> E1[Schema Migration]
-    E --> E2[Data Migration]
-    E --> E3[Rollback Support]
+    E --> E1[begin Command]
+    E --> E2[help Command]
+    E --> E3[@mention Commands]
+    E --> E4[Progress Commands]
+    
+    B1 --> F[OpenAI GPT-4 Integration]
+    C3 --> G[Database State Persistence]
+    D2 --> F
+    E1 --> H[Simulation Initialization]
 ```
 
-### 3. Authentication & Security Layer
+### 3. Database Architecture for Educational Simulations
 
 ```mermaid
 graph TD
-    A[Authentication Layer] --> B[JWT Token Management]
-    A --> C[Password Security]
-    A --> D[Role-Based Access Control]
-    A --> E[Session Management]
+    A[Database Layer] --> B[Scenario Management]
+    A --> C[Persona System]
+    A --> D[Scene Progression]
+    A --> E[User Progress Tracking]
+    A --> F[Publishing System]
     
-    B --> B1[Token Generation]
-    B --> B2[Token Validation]
-    B --> B3[Token Expiration]
+    B --> B1[scenarios table]
+    B --> B2[Scenario metadata]
+    B --> B3[Learning objectives]
+    B --> B4[Source PDF tracking]
     
-    C --> C1[Password Hashing]
-    C --> C2[Password Validation]
-    C --> C3[Password Reset]
+    C --> C1[personas table]
+    C --> C2[Personality traits (JSON)]
+    C --> C3[Background & goals]
+    C --> C4[Role definitions]
     
-    D --> D1[User Role]
-    D --> D2[Admin Role]
-    D --> D3[Permission Checks]
+    D --> D1[scenes table]
+    D --> D2[Scene sequence order]
+    D --> D3[User goals & objectives]
+    D --> D4[Scene descriptions & images]
     
-    E --> E1[Login Sessions]
-    E --> E2[Session Timeout]
-    E --> E3[Multi-Device Support]
+    E --> E1[user_progress table]
+    E --> E2[Current scene tracking]
+    E --> E3[Completion status]
+    E --> E4[Progress metrics]
+    
+    F --> F1[published_scenarios table]
+    F --> F2[Community ratings]
+    F --> F3[Usage analytics]
+    F --> F4[Marketplace metadata]
 ```
 
-### 4. CrewAI Integration Layer
+### 4. Linear Simulation Flow
 
 ```mermaid
 graph TD
-    A[CrewAI Service] --> B[Crew Configuration]
-    A --> C[Session Management]
-    A --> D[Tool Integration]
-    A --> E[Execution Engine]
+    A[User Starts Simulation] --> B[Load Scenario & Personas]
+    B --> C[Initialize ChatOrchestrator]
+    C --> D[Set Current Scene]
+    D --> E[Generate System Prompt]
+    E --> F[Wait for User Input]
     
-    B --> B1[Business Launch Crew]
-    B --> B2[Crisis Management Crew]
-    B --> B3[Innovation Crew]
-    B --> B4[Strategic Planning Crew]
+    F --> G{Command Type?}
+    G -->|begin| H[Start Scene Introduction]
+    G -->|help| I[Show Available Commands]
+    G -->|@mention| J[Direct Persona Interaction]
+    G -->|regular chat| K[General Scene Interaction]
     
-    C --> C1[Session Creation]
-    C --> C2[Resource Tracking]
-    C --> C3[Fallback Strategies]
-    C --> C4[State Management]
+    H --> L[Generate Scene Context]
+    I --> F
+    J --> M[Persona-Specific Response]
+    K --> N[Multi-Persona Response]
     
-    D --> D1[Core Business Tools]
-    D --> D2[Community Tools]
-    D --> D3[Tool Validation]
-    D --> D4[Dynamic Loading]
+    L --> O[Present Scene to User]
+    M --> P[Update Conversation State]
+    N --> P
     
-    E --> E1[Sequential Process]
-    E --> E2[Hierarchical Process]
-    E --> E3[Collaborative Process]
-    E --> E4[Response Generation]
+    O --> P
+    P --> Q{Scene Complete?}
+    Q -->|No| F
+    Q -->|Yes| R[Progress to Next Scene]
     
-    B1 --> F[Marketing → Finance → Product → Operations]
-    B2 --> G[Operations-led Crisis Response]
-    B3 --> H[Product-led Innovation Pipeline]
-    B4 --> I[Consensus-based Strategic Planning]
-```
-
-### 5. Tool Management Layer
-
-```mermaid
-graph TD
-    A[Tool Manager] --> B[Core Business Tools]
-    A --> C[Community Tools]
-    A --> D[Tool Registry]
-    A --> E[Tool Validation]
-    
-    B --> B1[Market Research Tool]
-    B --> B2[Financial Calculator Tool]
-    B --> B3[SWOT Analysis Tool]
-    B --> B4[Competitor Analysis Tool]
-    
-    C --> C1[Community Loader]
-    C --> C2[Tool Templates]
-    C --> C3[Contribution Framework]
-    C --> C4[Marketplace Integration]
-    
-    D --> D1[Tool Metadata]
-    D --> D2[Version Management]
-    D --> D3[Usage Analytics]
-    D --> D4[Dependency Tracking]
-    
-    E --> E1[Code Validation]
-    E --> E2[Security Scanning]
-    E --> E3[Performance Testing]
-    E --> E4[API Compliance]
-    
-    C1 --> F[Dynamic Tool Loading]
-    C2 --> G[Standardized Tool Structure]
-    C3 --> H[GitHub Integration]
-    C4 --> I[Community Ratings]
+    R --> S{More Scenes?}
+    S -->|Yes| D
+    S -->|No| T[Simulation Complete]
+    T --> U[Generate Summary & Analytics]
 ```
 
 ## Data Flow Architecture
 
-### 1. User Registration & Authentication Flow
+### 1. PDF Processing & AI Analysis Flow
 
 ```mermaid
 sequenceDiagram
     participant U as User
     participant F as Frontend
     participant A as API
+    participant PP as PDF Processor
+    participant LP as LlamaParse
+    participant AI as OpenAI
     participant DB as Database
-    participant E as Email Service
     
-    U->>F: Register request
-    F->>A: POST /users/register
-    A->>A: Validate input
-    A->>A: Hash password
-    A->>DB: Create user record
-    DB-->>A: User created
-    A->>E: Send verification email
-    A-->>F: Registration success
-    F-->>U: Success message
-    
-    U->>F: Login request
-    F->>A: POST /users/login
-    A->>DB: Validate credentials
-    DB-->>A: User data
-    A->>A: Generate JWT token
-    A-->>F: Token + user data
-    F-->>U: Dashboard access
+    U->>F: Upload PDF case study
+    F->>A: POST /api/parse-pdf/
+    A->>PP: Process PDF file
+    PP->>LP: Extract text & structure
+    LP-->>PP: Parsed content
+    PP->>AI: Analyze business case
+    AI-->>PP: Structured scenario data
+    PP->>AI: Generate personas
+    AI-->>PP: Key figures with personalities
+    PP->>AI: Create learning scenes
+    AI-->>PP: Scene sequence & objectives
+    PP->>DB: Save scenario, personas, scenes
+    DB-->>PP: Scenario created (ID: 123)
+    PP-->>A: Processing complete
+    A-->>F: Scenario ready for simulation
+    F-->>U: Show generated scenario preview
 ```
 
-### 2. Agent Creation & Management Flow
+### 2. Linear Simulation Execution Flow
 
 ```mermaid
 sequenceDiagram
     participant U as User
     participant F as Frontend
     participant A as API
+    participant CO as ChatOrchestrator
+    participant AI as OpenAI
     participant DB as Database
-    participant AI as AI Service
     
-    U->>F: Create agent
-    F->>A: POST /agents/ (with auth)
-    A->>A: Validate permissions
-    A->>DB: Save agent configuration
-    DB-->>A: Agent created
-    A->>AI: Test agent configuration
-    AI-->>A: Validation results
-    A-->>F: Agent created successfully
-    F-->>U: Agent builder success
+    U->>F: Start simulation (scenario_id: 123)
+    F->>A: POST /api/simulation/start
+    A->>DB: Load scenario, personas, scenes
+    DB-->>A: Simulation data
+    A->>CO: Initialize orchestrator
+    CO->>CO: Build system prompt
+    CO-->>A: Orchestrator ready
+    A-->>F: Simulation initialized
     
-    U->>F: Publish agent
-    F->>A: PUT /agents/{id}
-    A->>DB: Update public status
-    DB-->>A: Agent updated
-    A-->>F: Agent published
-    F-->>U: Community notification
-```
-
-### 3. CrewAI Simulation Execution Flow
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant F as Frontend
-    participant A as API
-    participant CS as CrewAI Service
-    participant TM as Tool Manager
-    participant C as CrewAI
-    participant DB as Database
-    participant AI as AI Models
+    U->>F: Send "begin"
+    F->>A: POST /api/simulation/linear-chat
+    A->>CO: Process begin command
+    CO->>AI: Generate scene introduction
+    AI-->>CO: Scene context & persona introduction
+    CO->>DB: Save interaction
+    CO-->>A: Scene introduction response
+    A-->>F: Rich scene description
+    F-->>U: Immersive scene presentation
     
-    U->>F: Start crew simulation
-    F->>A: POST /crews/start
-    A->>DB: Get scenario & crew config
-    DB-->>A: Crew configuration data
-    A->>CS: Create crew session
-    CS->>TM: Load enabled tools
-    TM-->>CS: Tool instances
-    CS->>C: Build crew with agents
-    C->>AI: Initialize agent models
-    AI-->>C: Models ready
-    CS->>DB: Create crew session record
-    CS-->>A: Crew session started
-    A-->>F: Simulation ready
-    
-    loop Crew Collaboration
-        U->>F: Send business challenge
-        F->>A: POST /crews/{id}/interact
-        A->>CS: Process user input
-        CS->>C: Execute crew collaboration
-        
-        Note over C,AI: Multi-Agent Collaboration
-        C->>AI: Marketing Agent analysis
-        AI-->>C: Market insights
-        C->>AI: Finance Agent planning
-        AI-->>C: Financial projections
-        C->>AI: Product Agent strategy
-        AI-->>C: Product recommendations
-        C->>AI: Operations Agent execution
-        AI-->>C: Implementation plan
-        
-        C-->>CS: Collaborative response
-        CS->>DB: Save crew conversation
-        CS-->>A: Crew response data
-        A-->>F: Multi-agent response
-        F-->>U: Display collaboration results
+    loop Scene Interaction
+        U->>F: Chat with personas
+        F->>A: POST /api/simulation/linear-chat
+        A->>CO: Process user message
+        CO->>AI: Generate persona responses
+        AI-->>CO: AI persona interactions
+        CO->>CO: Check scene completion
+        CO->>DB: Update progress state
+        CO-->>A: Persona response + progress
+        A-->>F: Interactive response
+        F-->>U: Continue conversation
     end
     
-    U->>F: Complete simulation
-    F->>A: POST /crews/{id}/complete
-    A->>CS: Finalize session
-    CS->>DB: Update session status
-    CS-->>A: Session completed
-    A-->>F: Simulation completed
-    F-->>U: Collaboration summary
+    CO->>CO: Scene objectives achieved
+    CO->>DB: Mark scene complete
+    CO->>CO: Load next scene
+    CO-->>A: Scene transition
+    A-->>F: New scene introduction
+    F-->>U: Progress to next scene
 ```
 
 ## Technology Stack
 
-### Frontend Technologies
-- **React 18** - Modern UI framework
-- **TypeScript** - Type-safe JavaScript
-- **React Router** - Client-side routing
-- **Axios** - HTTP client
-- **Material-UI** - UI component library
-- **React Hook Form** - Form management
-
 ### Backend Technologies
-- **FastAPI** - High-performance web framework
-- **Python 3.11+** - Programming language
-- **SQLAlchemy** - ORM for database operations
-- **Pydantic** - Data validation and serialization
-- **Alembic** - Database migration tool
-- **JWT** - Authentication tokens
+- **FastAPI** - High-performance async web framework with automatic OpenAPI documentation
+- **Python 3.11+** - Modern Python with type hints and async support
+- **SQLAlchemy** - Advanced ORM with PostgreSQL integration and JSON support
+- **Pydantic** - Data validation, serialization, and API schema generation
+- **Alembic** - Database migration management
 
 ### AI/ML Technologies
-- **CrewAI** - Multi-agent orchestration framework
-- **OpenAI API** - GPT models for text generation
-- **Anthropic API** - Claude models for advanced reasoning
-- **LangChain** - AI application framework
-- **Custom Tool System** - Extensible business tool framework
-- **Embedding Models** - Vector search and similarity
+- **ChatOrchestrator** - Custom linear simulation engine with multi-scene progression
+- **OpenAI GPT-4** - Advanced natural language generation for persona interactions
+- **LlamaParse** - Intelligent PDF processing and structured data extraction
+- **AI Image Generation** - Scene visualization and immersive imagery
+- **Embedding Models** - Content similarity and search capabilities
+
+### Frontend Technologies
+- **Next.js 14** - React framework with TypeScript, App Router, and server components
+- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
+- **shadcn/ui** - Modern, accessible component library built on Radix UI
+- **React Hook Form** - Performant form management with validation
+- **Zustand** - Lightweight state management for complex application state
 
 ### Database & Storage
-- **PostgreSQL** - Primary database (Neon cloud)
-- **Redis** - Caching and session storage
-- **AWS S3** - File storage for documents/images
-- **Vector Database** - Embedding storage for search
+- **PostgreSQL** - Primary database with advanced JSON support for persona traits and scene data
+- **Redis** - High-performance caching for simulation state and user sessions
+- **File Storage** - Secure storage for PDF documents and AI-generated scene images
+- **Vector Database** - Embedding storage for content similarity and intelligent search
 
 ### DevOps & Infrastructure
-- **Docker** - Containerization
-- **GitHub Actions** - CI/CD pipeline
-- **Pytest** - Testing framework
-- **Black** - Code formatting
-- **Flake8** - Code linting
+- **Docker** - Containerization for consistent development and deployment
+- **GitHub Actions** - CI/CD pipeline with automated testing and deployment
+- **Pytest** - Comprehensive testing framework with fixtures and mocking
+- **Black & Flake8** - Code formatting and linting for maintainable Python code
 
 ## Security Architecture
 
-### Authentication Security
-- **JWT Tokens** - Stateless authentication
-- **Bcrypt Hashing** - Password security
-- **Token Expiration** - Session timeout
-- **Refresh Tokens** - Secure token renewal
+### Data Protection & Privacy
+- **File Upload Security** - PDF validation, sanitization, and malware scanning
+- **AI Content Filtering** - Safe content generation policies and output validation
+- **User Data Privacy** - GDPR-compliant data handling and user consent management
+- **Simulation State Security** - Encrypted storage of user progress and conversation history
 
-### API Security
-- **Rate Limiting** - Prevent abuse
-- **Input Validation** - Data sanitization
-- **SQL Injection Prevention** - Parameterized queries
-- **CORS Configuration** - Cross-origin security
+### Authentication & Authorization
+- **JWT Token System** - Stateless authentication with secure token management
+- **Role-Based Access Control** - User permissions for content creation and publishing
+- **Session Management** - Secure simulation state tracking across user sessions
+- **API Security** - Rate limiting, input validation, and CORS protection
 
-### Data Security
-- **Encryption at Rest** - Database encryption
-- **Encryption in Transit** - HTTPS/TLS
-- **Privacy Controls** - User data protection
-- **Audit Logging** - Security event tracking
+### AI Service Security
+- **API Key Management** - Secure storage and rotation of external service keys
+- **Content Validation** - Input sanitization and output filtering for AI services
+- **Usage Monitoring** - Tracking and alerting for unusual AI service usage patterns
+- **Error Handling** - Secure error responses without exposing sensitive information
 
 ## Performance Optimization
 
-### Database Optimization
-- **Connection Pooling** - Efficient database connections
-- **Query Optimization** - Indexed queries
-- **Caching Strategy** - Redis for frequently accessed data
-- **Database Partitioning** - Large table optimization
-
-### API Performance
-- **Async Processing** - Non-blocking operations
-- **Response Compression** - Reduced bandwidth
-- **CDN Integration** - Static asset delivery
-- **Load Balancing** - Request distribution
+### Backend Performance
+- **Async Processing** - Non-blocking PDF processing and AI content generation
+- **Intelligent Caching** - Redis caching for simulation state, user sessions, and frequently accessed data
+- **Database Optimization** - Indexed queries, connection pooling, and query optimization
+- **Background Tasks** - Asynchronous processing for time-intensive operations
 
 ### Frontend Performance
-- **Code Splitting** - Lazy loading
-- **Bundle Optimization** - Webpack optimization
-- **Image Optimization** - Compressed images
-- **Progressive Web App** - Offline capabilities
+- **Server-Side Rendering** - Next.js SSR for fast initial page loads
+- **Code Splitting** - Lazy loading of simulation components and AI interactions
+- **Image Optimization** - Compressed and responsive images for scene visualization
+- **Progressive Enhancement** - Core functionality works without JavaScript
 
-## Monitoring & Observability
-
-### Application Monitoring
-- **Health Checks** - System status monitoring
-- **Performance Metrics** - Response time tracking
-- **Error Tracking** - Exception monitoring
-- **User Analytics** - Usage pattern analysis
-
-### Infrastructure Monitoring
-- **Server Metrics** - CPU, memory, disk usage
-- **Database Metrics** - Query performance
-- **Network Monitoring** - Traffic analysis
-- **Log Aggregation** - Centralized logging
-
-### Business Metrics
-- **User Engagement** - Feature usage tracking
-- **Content Performance** - Agent/scenario popularity
-- **Community Growth** - User acquisition metrics
-- **Revenue Tracking** - Subscription metrics
+### AI Service Optimization
+- **Request Batching** - Efficient API usage for multiple AI operations
+- **Response Caching** - Cache similar AI responses to reduce API calls
+- **Prompt Optimization** - Efficient prompt engineering for faster and more accurate responses
+- **Fallback Strategies** - Graceful degradation when AI services are unavailable
 
 ## Scalability Considerations
 
 ### Horizontal Scaling
-- **Microservices Architecture** - Service decomposition
-- **Load Balancing** - Request distribution
-- **Database Sharding** - Data partitioning
-- **API Versioning** - Backward compatibility
+- **Stateless API Design** - Easy scaling across multiple server instances
+- **Load Balancing** - Intelligent request distribution with health checks
+- **Database Sharding** - User-based data partitioning for large-scale deployments
+- **Microservices Architecture** - Independent scaling of PDF processing, orchestration, and publishing services
 
 ### Vertical Scaling
-- **Resource Optimization** - CPU/memory tuning
-- **Database Optimization** - Index optimization
-- **Caching Strategy** - Multi-layer caching
-- **Connection Pooling** - Resource management
+- **Resource Optimization** - Efficient CPU and memory usage for AI processing
+- **Connection Pooling** - Optimized database connections and resource management
+- **Caching Strategies** - Multi-layer caching for different data types and access patterns
+- **Background Processing** - Separate workers for CPU-intensive tasks
 
-### Cloud Scaling
-- **Auto-scaling Groups** - Dynamic resource allocation
-- **Container Orchestration** - Kubernetes deployment
-- **CDN Distribution** - Global content delivery
-- **Multi-region Deployment** - Geographic distribution
+### AI Service Management
+- **Rate Limiting** - Intelligent throttling of AI API requests
+- **Quota Management** - User-based limits for AI processing and storage
+- **Service Monitoring** - Real-time monitoring of AI service health and performance
+- **Cost Optimization** - Efficient use of external AI services to manage operational costs
+
+## Monitoring & Observability
+
+### Application Monitoring
+- **Health Endpoints** - Comprehensive system health checks for all services
+- **Performance Metrics** - Response time tracking, throughput monitoring, and resource usage
+- **Error Tracking** - Detailed exception monitoring with context and stack traces
+- **User Analytics** - Simulation completion rates, engagement metrics, and learning outcomes
+
+### AI Service Monitoring
+- **API Usage Tracking** - Monitor OpenAI and LlamaParse API usage and costs
+- **Content Quality Metrics** - Track AI-generated content quality and user satisfaction
+- **Processing Time Analytics** - Monitor PDF processing and simulation response times
+- **Failure Rate Monitoring** - Track and alert on AI service failures and degradations
+
+### Business Intelligence
+- **Educational Metrics** - Learning outcome tracking, scenario effectiveness, and student progress
+- **Content Performance** - Popular scenarios, high-rated simulations, and user engagement
+- **Community Growth** - User acquisition, retention, and content creation metrics
+- **Revenue Analytics** - Subscription metrics, usage patterns, and cost analysis
 
 ## Future Architecture Enhancements
 
-### Phase 1: Enhanced AI Integration
-- **Custom Model Training** - User-specific models
-- **Advanced Analytics** - AI-powered insights
-- **Real-time Collaboration** - Multi-user simulations
-- **Voice Integration** - Speech-to-text capabilities
+### Phase 1: Advanced AI Integration (Q2 2024)
+- **Multi-Modal AI** - Integration of text, image, and voice AI for richer simulations
+- **Custom Model Training** - Fine-tuned models for specific educational domains
+- **Real-Time Collaboration** - Multi-user simulations with shared learning experiences
+- **Advanced Analytics** - AI-powered learning outcome prediction and optimization
 
-### Phase 2: Enterprise Features
-- **SSO Integration** - Enterprise authentication
-- **Team Management** - Organization support
-- **Advanced Permissions** - Granular access control
-- **Audit Trail** - Compliance tracking
+### Phase 2: Enterprise Features (Q3 2024)
+- **SSO Integration** - Enterprise authentication with SAML and OAuth2
+- **Learning Management System Integration** - LMS compatibility for institutional use
+- **Advanced Reporting** - Comprehensive analytics dashboards for educators and administrators
+- **White-Label Solutions** - Customizable branding and deployment options for institutions
 
-### Phase 3: Platform Expansion
-- **Mobile App** - Native mobile experience
-- **API Marketplace** - Third-party integrations
-- **Webhook Support** - Event-driven architecture
-- **GraphQL API** - Flexible data fetching
+### Phase 3: Platform Expansion (Q4 2024)
+- **Mobile Native Apps** - iOS and Android applications for mobile learning
+- **API Marketplace** - Third-party integrations and custom simulation extensions
+- **Webhook System** - Event-driven architecture for external integrations
+- **GraphQL API** - Flexible data fetching for complex frontend requirements
 
 ## Deployment Architecture
 
 ### Development Environment
-- **Local Development** - Docker Compose setup
-- **Hot Reloading** - Fast development iteration
-- **Local Database** - PostgreSQL in Docker
-- **Mock Services** - AI service mocking
+- **Local Development** - Docker Compose setup with hot reloading and debugging
+- **AI Service Mocking** - Local mocks for OpenAI and LlamaParse during development
+- **Test Database** - Isolated PostgreSQL instance with test data and migrations
+- **Development Tools** - Integrated debugging, profiling, and testing tools
 
 ### Staging Environment
-- **Cloud Deployment** - Production-like setup
-- **Continuous Integration** - Automated testing
-- **Database Migration** - Schema synchronization
-- **Performance Testing** - Load testing
+- **Cloud Deployment** - Production-like infrastructure with real AI services
+- **Continuous Integration** - Automated testing, security scanning, and deployment
+- **Performance Testing** - Load testing for PDF processing and simulation endpoints
+- **User Acceptance Testing** - Staging environment for final testing before production
 
 ### Production Environment
-- **High Availability** - Multi-zone deployment
-- **Disaster Recovery** - Backup strategies
-- **Monitoring** - Comprehensive observability
-- **Security Hardening** - Production security
+- **High Availability** - Multi-zone deployment with automatic failover
+- **Auto Scaling** - Dynamic resource allocation based on usage patterns
+- **Disaster Recovery** - Automated backup and recovery procedures
+- **Security Hardening** - Production security measures, monitoring, and compliance
 
-This architecture provides a robust, scalable, and secure foundation for the CrewAI Agent Builder Platform, supporting both current requirements and future growth. 
+This architecture provides a robust, scalable, and secure foundation for the AI Agent Education Platform, supporting both current educational requirements and future growth in the AI-powered learning space. The system is designed to transform traditional business case studies into engaging, interactive learning experiences through intelligent PDF processing and immersive AI persona interactions. 

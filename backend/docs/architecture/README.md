@@ -2,7 +2,7 @@
 
 ## Overview
 
-Welcome to the comprehensive architecture documentation for the CrewAI Agent Builder Platform. This documentation provides detailed insights into the system design, database architecture, user workflows, and development guidelines.
+Welcome to the comprehensive architecture documentation for the **AI Agent Education Platform**. This documentation provides detailed insights into the system design, database architecture, user workflows, and development guidelines for our **PDF-to-simulation pipeline** with integrated **ChatOrchestrator** system.
 
 ## 📚 Documentation Structure
 
@@ -10,17 +10,17 @@ Welcome to the comprehensive architecture documentation for the CrewAI Agent Bui
 
 | Document | Description | Key Features |
 |----------|-------------|--------------|
-| **[System Overview](./system-overview.md)** | High-level system architecture and technology stack | Architecture diagrams, scalability considerations, security layers |
-| **[Database Schema](./database-schema.md)** | Complete database design with ERD and relationships | 15+ tables, marketplace features, resource tracking |
-| **[User Workflows](./user-workflow.md)** | Visual user journey flows and interaction patterns | Mermaid diagrams, persona-based workflows, error handling |
+| **[System Overview](./system-overview.md)** | High-level system architecture and technology stack | ChatOrchestrator architecture, PDF processing pipeline, linear simulation flow |
+| **[Database Schema](./database-schema.md)** | Complete database design with ERD and relationships | Scenario/persona/scene models, user progress tracking, simulation state |
+| **[User Workflows](./user-workflow.md)** | Visual user journey flows and interaction patterns | PDF upload → AI processing → simulation creation → linear chat experience |
 
 ### API & Development
 
 | Document | Description | Key Features |
 |----------|-------------|--------------|
-| **[API Reference](../API_Reference.md)** | Complete REST API documentation | 25+ endpoints, authentication, examples, SDKs |
-| **[Developer Guide](../Developer_Guide.md)** | Development setup, testing, and deployment | Quick start, testing strategy, code standards |
-| **[API Testing Guide](../API_Testing_Guide.md)** | Practical API testing examples | PowerShell/curl commands, workflow testing |
+| **[API Reference](../API_Reference.md)** | Complete REST API documentation | PDF processing, linear simulation, ChatOrchestrator endpoints, marketplace publishing |
+| **[Developer Guide](../Developer_Guide.md)** | Development setup, testing, and deployment | Quick start, ChatOrchestrator setup, AI service integration |
+| **[API Testing Guide](../API_Testing_Guide.md)** | Practical API testing examples | PDF upload testing, simulation flow testing, orchestrator commands |
 
 ## 🚀 Platform Architecture
 
@@ -30,29 +30,36 @@ Welcome to the comprehensive architecture documentation for the CrewAI Agent Bui
 graph TB
     subgraph "User Interface"
         WEB[Web Application]
-        MOBILE[Mobile App]
-        API_CLIENTS[API Clients]
+        CHATBOX[Chat-Box Interface]
+        BUILDER[Scenario Builder]
     end
     
     subgraph "Application Layer"
         FASTAPI[FastAPI Backend]
-        REACT[React Frontend]
+        NEXTJS[Next.js Frontend]
         AUTH[Authentication]
         MIDDLEWARE[Middleware Stack]
     end
     
-    subgraph "Business Logic"
-        USER_MGMT[User Management]
-        AGENT_BUILDER[Agent Builder]
-        SIMULATION[Simulation Engine]
-        COMMUNITY[Community Features]
+    subgraph "AI Processing Layer"
+        PDF_PROCESSOR[PDF Parser & AI Analysis]
+        CHAT_ORCHESTRATOR[ChatOrchestrator]
+        PERSONA_ENGINE[AI Persona Engine]
+        SCENE_MANAGER[Scene Progression]
     end
     
-    subgraph "AI/ML Layer"
-        CREWAI[CrewAI Framework]
+    subgraph "Business Logic"
+        SCENARIO_MGMT[Scenario Management]
+        SIMULATION_ENGINE[Linear Simulation Engine]
+        PUBLISHING[Publishing & Marketplace]
+        USER_PROGRESS[User Progress Tracking]
+    end
+    
+    subgraph "AI/ML Services"
         OPENAI[OpenAI API]
-        ANTHROPIC[Anthropic API]
-        TOOLS[Custom Tools]
+        LLAMAPARSE[LlamaParse]
+        IMAGE_GEN[AI Image Generation]
+        EMBEDDING[Embedding Service]
     end
     
     subgraph "Data Layer"
@@ -62,137 +69,121 @@ graph TB
     end
     
     WEB --> FASTAPI
-    MOBILE --> FASTAPI
-    API_CLIENTS --> FASTAPI
+    CHATBOX --> FASTAPI
+    BUILDER --> FASTAPI
     FASTAPI --> AUTH
     FASTAPI --> MIDDLEWARE
-    AUTH --> USER_MGMT
-    USER_MGMT --> AGENT_BUILDER
-    AGENT_BUILDER --> SIMULATION
-    SIMULATION --> COMMUNITY
-    SIMULATION --> CREWAI
-    CREWAI --> OPENAI
-    CREWAI --> ANTHROPIC
-    CREWAI --> TOOLS
-    USER_MGMT --> POSTGRES
-    AGENT_BUILDER --> POSTGRES
-    SIMULATION --> POSTGRES
-    COMMUNITY --> POSTGRES
+    
+    FASTAPI --> PDF_PROCESSOR
+    PDF_PROCESSOR --> LLAMAPARSE
+    PDF_PROCESSOR --> OPENAI
+    
+    FASTAPI --> CHAT_ORCHESTRATOR
+    CHAT_ORCHESTRATOR --> PERSONA_ENGINE
+    CHAT_ORCHESTRATOR --> SCENE_MANAGER
+    PERSONA_ENGINE --> OPENAI
+    
+    SCENARIO_MGMT --> POSTGRES
+    SIMULATION_ENGINE --> POSTGRES
+    PUBLISHING --> POSTGRES
+    USER_PROGRESS --> POSTGRES
+    
     FASTAPI --> REDIS
-    COMMUNITY --> FILES
+    PDF_PROCESSOR --> FILES
+    IMAGE_GEN --> FILES
 ```
 
 ## 🎯 Key Platform Features
 
-### 1. **User Management & Authentication**
-- JWT-based authentication system
-- Role-based access control (user/admin)
-- Profile management with privacy controls
-- Email verification and password reset
+### 1. **PDF-to-Simulation Pipeline**
+- **AI-Powered PDF Processing** - Extract business case studies with LlamaParse
+- **Intelligent Content Analysis** - Generate personas, scenes, and learning objectives
+- **Automatic Scenario Creation** - Transform PDFs into interactive simulations
+- **Image Generation** - Create visual scenes with AI-generated imagery
 
-### 2. **AI Agent Builder (CrewAI-Aligned)**
-- Visual agent creation interface focused on roles and capabilities
-- Custom tool integration
-- Template system for reusable agents
-- **Agents are reusable across different scenarios**
-- Version control and remixing capabilities
+### 2. **ChatOrchestrator System**
+- **Linear Simulation Flow** - Multi-scene progression with clear objectives
+- **AI Persona Interactions** - Dynamic character responses based on personality traits
+- **Scene Management** - Automatic progression and goal tracking
+- **Command System** - Built-in commands (begin, help, @mentions)
+- **State Management** - Persistent simulation state across sessions
 
-### 3. **Business Scenario Management (Task-Centric)**
-- Manual scenario creation with integrated task definition
-- **Tasks are defined within scenarios, not tied to individual agents**
-- PDF document processing with AI task extraction
-- Learning objectives and task dependency configuration
-- **Tasks can be assigned to specific agents or handled collaboratively by crews**
-- Public/private sharing options
+### 3. **Enhanced User Experience**
+- **Immersive Chat Interface** - Natural conversation with AI personas
+- **Visual Scene Progression** - Rich imagery and contextual descriptions
+- **Goal-Oriented Learning** - Clear objectives and success criteria
+- **Progress Tracking** - User journey and completion metrics
 
-### 4. **CrewAI Multi-Agent System**
-- Business crew templates (Launch, Crisis, Innovation, Strategic Planning)
-- Sequential, hierarchical, and collaborative processes
-- Real-time crew collaboration with role-based interactions
-- Advanced tool ecosystem with community contributions
+### 4. **Publishing & Marketplace**
+- **Scenario Sharing** - Publish scenarios to community marketplace
+- **Content Discovery** - Search and filter published scenarios
+- **Rating System** - Community feedback and quality metrics
+- **Usage Analytics** - Track scenario performance and engagement
 
-### 5. **Simulation Engine**
-- Individual agent and crew-based simulations
-- Real-time chat with AI crews
-- Resource tracking and fallback strategies
-- Session management and collaboration metrics
-
-### 6. **Community Marketplace**
-- Public sharing of agents, tools, scenarios, and crew configurations
-- Rating and review system
-- Collections and favorites
-- Content discovery and search
-- Community tool contribution framework
+### 5. **Developer-Friendly Architecture**
+- **RESTful API Design** - Clean, documented endpoints
+- **Comprehensive Error Handling** - Detailed error responses and logging
+- **Integration Examples** - Python and JavaScript SDK examples
+- **Testing Framework** - Complete test coverage with examples
 
 ## 📊 Database Architecture
 
 ### Core Data Models
 
-The platform uses a comprehensive PostgreSQL schema with 20+ interconnected tables:
+The platform uses a PostgreSQL schema optimized for educational simulations:
 
 ```mermaid
 erDiagram
-    users ||--o{ agents : creates
     users ||--o{ scenarios : creates
-    users ||--o{ simulations : participates
-    users ||--o{ collections : manages
+    users ||--o{ user_progress : tracks
+    users ||--o{ published_scenarios : publishes
     
-    agents ||--o{ tasks : assigned
-    agents ||--o{ agent_reviews : receives
-    agents ||--o{ simulation_agents : tracked
-    agents ||--o{ crew_members : participates
+    scenarios ||--o{ personas : contains
+    scenarios ||--o{ scenes : contains
+    scenarios ||--o{ user_progress : simulates
     
-    scenarios ||--o{ simulations : used_in
-    scenarios ||--o{ crew_configurations : configured_for
+    personas ||--o{ scene_personas : participates_in
+    scenes ||--o{ scene_personas : includes
+    scenes ||--o{ user_progress : current_scene
     
-    simulations ||--o{ simulation_messages : contains
-    simulations ||--o{ simulation_fallbacks : fallbacks
+    user_progress ||--o{ progress_messages : contains
     
-    crew_configurations ||--o{ crew_members : includes
-    crew_configurations ||--o{ crew_sessions : executes
-    crew_sessions ||--o{ crew_tasks : contains
-    
-    tool_registry ||--o{ crew_configurations : enables
-    
-    collections ||--o{ collection_agents : contains
-    collections ||--o{ collection_tools : contains
+    published_scenarios ||--o{ scenario_ratings : receives
+    users ||--o{ scenario_ratings : provides
 ```
 
 ### Key Database Features
-- **Marketplace Support**: Public/private content, ratings, reviews
-- **CrewAI Integration**: Crew configurations, sessions, and task tracking
-- **Tool Ecosystem**: Community tool registry and contribution framework
-- **Resource Tracking**: Snapshots for simulation execution
-- **Fallback Strategies**: Handle missing or private resources
-- **Version Control**: Track changes and allow remixing
-- **Community Features**: Collections, favorites, user reputation
+- **Scenario Management** - Rich business case storage with metadata
+- **Persona System** - AI character definitions with personality traits
+- **Scene Progression** - Sequential learning experiences with objectives
+- **User Progress Tracking** - Detailed simulation state and completion metrics
+- **Publishing System** - Community marketplace with ratings and analytics
 
 ## 🔧 Technology Stack
 
 ### Backend Technologies
-- **FastAPI** - High-performance web framework
-- **SQLAlchemy** - Database ORM with PostgreSQL
-- **CrewAI** - Multi-agent AI framework
+- **FastAPI** - High-performance web framework with automatic API documentation
+- **SQLAlchemy** - Database ORM with PostgreSQL integration
 - **Pydantic** - Data validation and serialization
-- **JWT** - Authentication and authorization
+- **LlamaParse** - Advanced PDF processing and extraction
+- **OpenAI API** - GPT models for content generation and persona interactions
 
 ### Frontend Technologies
-- **React 18** - Modern UI framework
-- **TypeScript** - Type-safe JavaScript
-- **Material-UI** - Component library
-- **React Router** - Client-side routing
-- **Axios** - HTTP client
+- **Next.js 14** - React framework with TypeScript
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - Modern UI component library
+- **React Hook Form** - Form management and validation
 
 ### AI/ML Technologies
-- **OpenAI API** - GPT models for text generation
-- **Anthropic API** - Claude models for reasoning
-- **LangChain** - AI application framework
-- **Custom Tools** - Extensible tool system
+- **ChatOrchestrator** - Custom multi-scene simulation engine
+- **OpenAI GPT-4** - Natural language generation and persona interactions
+- **LlamaParse** - Intelligent document processing
+- **AI Image Generation** - Scene visualization and immersion
 
 ### Infrastructure
-- **PostgreSQL** - Primary database (Neon cloud)
-- **Redis** - Caching and session storage
-- **Docker** - Containerization
+- **PostgreSQL** - Primary database with rich JSON support
+- **Redis** - Session management and caching
+- **File Storage** - PDF documents and generated images
 - **GitHub Actions** - CI/CD pipeline
 
 ## 🏗️ Development Workflow
@@ -201,23 +192,25 @@ erDiagram
 
 ```bash
 # 1. Clone and setup backend
-git clone <repo-url>
+git clone https://github.com/HendrikKrack/ai-agent-education-platform
 cd backend
 python -m venv venv
-source venv/bin/activate
+venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 
 # 2. Configure environment
-cp .env.example .env
-# Edit .env with your database credentials
+copy env_template.txt .env
+# Edit .env with your API keys:
+# OPENAI_API_KEY=your_openai_key
+# LLAMAPARSE_API_KEY=your_llamaparse_key
 
 # 3. Run backend
-uvicorn main:app --reload
+uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 
 # 4. Setup frontend
-cd ../frontend
+cd ../frontend/ai-agent-platform
 npm install
-npm start
+npm run dev
 ```
 
 ### Testing Strategy
@@ -229,220 +222,245 @@ pytest
 # Run with coverage
 pytest --cov=. --cov-report=html
 
-# Run specific test categories
-pytest unit_tests/auth/
-pytest unit_tests/api/
-pytest unit_tests/core/
+# Test specific components
+pytest unit_tests/api/  # API endpoint tests
+pytest unit_tests/core/ # Core functionality tests
 ```
 
 ## 🎨 User Experience Design
-
-### User Personas
-
-1. **Educator** - Creates educational scenarios for classroom use
-2. **Student** - Participates in simulations for learning
-3. **Developer** - Builds custom agents and tools
-4. **Business Professional** - Uses simulations for training
 
 ### User Journey Flow
 
 ```mermaid
 graph LR
-    A[Register] --> B[Login]
-    B --> C[Dashboard]
-    C --> D{User Goal}
-    D -->|Create Agent| E[Agent Builder]
-    D -->|Build Crew| F[Crew Builder]
-    D -->|Develop Tools| G[Tool Development]
-    D -->|Run Simulation| H[Simulation Runner]
-    D -->|Share| I[Community]
-    D -->|Explore| J[Marketplace]
-    E --> K[Publish Agent]
-    F --> L[Configure Crew]
-    G --> M[Submit Tool]
-    H --> N[Collaborate & Learn]
-    I --> O[Share & Review]
-    J --> P[Discover & Clone]
+    A[Upload PDF] --> B[AI Processing]
+    B --> C[Review Generated Scenario]
+    C --> D[Start Simulation]
+    D --> E[Chat with AI Personas]
+    E --> F[Complete Objectives]
+    F --> G[Progress to Next Scene]
+    G --> H[Simulation Complete]
+    H --> I[Share & Publish]
 ```
+
+### Key User Interactions
+
+1. **PDF Upload** - Drag-and-drop business case studies
+2. **AI Processing** - Watch real-time extraction of personas and scenes
+3. **Simulation Start** - Begin immersive chat experience
+4. **Persona Interactions** - Natural conversations with AI characters
+5. **Scene Progression** - Advance through structured learning objectives
+6. **Publishing** - Share successful scenarios with community
 
 ## 🔐 Security Architecture
 
+### Data Protection
+- **File Upload Security** - PDF validation and sanitization
+- **AI Content Filtering** - Safe content generation policies
+- **User Data Privacy** - Secure storage and access controls
+- **API Security** - Rate limiting and input validation
+
 ### Authentication & Authorization
 - **JWT Tokens** - Stateless authentication
-- **Role-Based Access** - User/admin permissions
-- **Rate Limiting** - API abuse prevention
-- **Input Validation** - SQL injection prevention
-
-### Data Protection
-- **Password Hashing** - Bcrypt encryption
-- **Data Encryption** - At rest and in transit
-- **Privacy Controls** - User data protection
-- **Audit Logging** - Security event tracking
+- **Role-Based Access** - User permissions and content ownership
+- **Session Management** - Secure simulation state tracking
 
 ## 📈 Performance & Scalability
 
 ### Optimization Strategies
-- **Database Indexing** - Optimized query performance
-- **Connection Pooling** - Efficient database connections
-- **Caching Layer** - Redis for frequently accessed data
-- **Async Processing** - Non-blocking operations
+- **Async Processing** - Non-blocking PDF processing and AI generation
+- **Intelligent Caching** - Redis for simulation state and user sessions
+- **Database Optimization** - Indexed queries and connection pooling
+- **CDN Integration** - Fast delivery of generated images and static assets
 
 ### Scalability Considerations
-- **Horizontal Scaling** - Multiple server instances
-- **Load Balancing** - Request distribution
-- **Database Sharding** - Data partitioning
-- **CDN Integration** - Static asset delivery
+- **Horizontal Scaling** - Stateless API design for multiple instances
+- **Load Balancing** - Request distribution across servers
+- **Database Sharding** - User-based data partitioning
+- **AI Service Management** - Rate limiting and quota management
 
 ## 🔧 API Architecture
 
-### RESTful API Design
-- **Resource-Based URLs** - `/users/`, `/agents/`, `/simulations/`
-- **HTTP Methods** - GET, POST, PUT, DELETE
-- **Status Codes** - Proper HTTP response codes
-- **Error Handling** - Consistent error responses
+### Core Endpoints
 
-### Authentication Flow
+```mermaid
+graph TD
+    A[API Gateway] --> B[PDF Processing]
+    A --> C[Scenario Management]
+    A --> D[Linear Simulation]
+    A --> E[Publishing]
+    
+    B --> B1[/api/parse-pdf/]
+    C --> C1[/scenarios/]
+    D --> D1[/api/simulation/start]
+    D --> D2[/api/simulation/linear-chat]
+    E --> E1[/api/publishing/publish-scenario]
+    E --> E2[/api/publishing/marketplace]
+```
+
+### ChatOrchestrator Integration
+
 ```mermaid
 sequenceDiagram
     participant User
     participant Frontend
     participant API
-    participant Database
+    participant Orchestrator
+    participant OpenAI
     
-    User->>Frontend: Login credentials
-    Frontend->>API: POST /users/login
-    API->>Database: Validate credentials
-    Database-->>API: User data
-    API->>API: Generate JWT token
-    API-->>Frontend: Token + user info
-    Frontend->>Frontend: Store token
-    Frontend-->>User: Dashboard access
+    User->>Frontend: Start Simulation
+    Frontend->>API: POST /api/simulation/start
+    API->>API: Initialize Orchestrator
+    API-->>Frontend: Simulation Ready
+    
+    User->>Frontend: Send "begin"
+    Frontend->>API: POST /api/simulation/linear-chat
+    API->>Orchestrator: Process Command
+    Orchestrator->>OpenAI: Generate Response
+    OpenAI-->>Orchestrator: AI Response
+    Orchestrator-->>API: Formatted Response
+    API-->>Frontend: Scene Introduction
+    Frontend-->>User: Immersive Experience
 ```
 
 ## 📱 Frontend Architecture
 
 ### Component Structure
 ```
-src/
+frontend/ai-agent-platform/
+├── app/
+│   ├── chat-box/           # Linear simulation interface
+│   ├── scenario-builder/   # PDF upload and scenario creation
+│   ├── marketplace/        # Published scenarios discovery
+│   └── dashboard/          # User progress and analytics
 ├── components/
-│   ├── AgentBuilder/
-│   ├── SimulationRunner/
-│   ├── Community/
-│   └── Common/
-├── services/
-│   ├── api.ts
-│   ├── auth.ts
-│   └── storage.ts
-├── hooks/
-│   ├── useAuth.ts
-│   ├── useApi.ts
-│   └── useSimulation.ts
-└── utils/
-    ├── validation.ts
-    ├── formatting.ts
-    └── constants.ts
+│   ├── ui/                 # shadcn/ui components
+│   ├── PersonaCard.tsx     # AI character display
+│   └── SceneCard.tsx       # Scene progression UI
+└── lib/
+    ├── api.ts              # API client functions
+    └── types.ts            # TypeScript definitions
 ```
 
 ### State Management
-- **React Hooks** - Local component state
-- **Context API** - Global state management
-- **Custom Hooks** - Reusable logic
-- **Local Storage** - Client-side persistence
+- **React Hooks** - Local component state and effects
+- **Context API** - Global simulation state
+- **localStorage** - Persistent user preferences and scenario data
+- **Custom Hooks** - Reusable simulation logic
 
 ## 🔍 Testing Architecture
 
-### Test Categories
-- **Unit Tests** - Individual component testing
-- **Integration Tests** - Component interaction testing
-- **API Tests** - Endpoint functionality testing
-- **End-to-End Tests** - Complete workflow testing
+### Test Coverage Areas
+- **API Endpoints** - Complete endpoint functionality testing
+- **PDF Processing** - File upload and AI extraction testing
+- **ChatOrchestrator** - Simulation flow and persona interaction testing
+- **Frontend Components** - UI component and user interaction testing
 
 ### Test Structure
 ```
 unit_tests/
-├── auth/                    # Authentication tests
-├── api/                     # API endpoint tests
-├── core/                    # Core functionality tests
-└── integration/             # Integration tests
+├── api/                    # API endpoint tests
+│   ├── test_pdf_processing.py
+│   ├── test_simulation.py
+│   └── test_publishing.py
+├── core/                   # Core functionality tests
+│   ├── test_orchestrator.py
+│   └── test_persona_engine.py
+└── integration/            # End-to-end workflow tests
+    └── test_pdf_to_simulation.py
 ```
 
 ## 🚀 Deployment Architecture
 
-### Environment Structure
-- **Development** - Local development environment
+### Environment Configuration
+- **Development** - Local development with hot reloading
 - **Staging** - Production-like testing environment
-- **Production** - Live production environment
+- **Production** - Scalable cloud deployment
 
 ### Deployment Pipeline
 ```mermaid
 graph LR
     A[Git Push] --> B[GitHub Actions]
     B --> C[Run Tests]
-    C --> D[Build Docker Image]
-    D --> E[Deploy to Staging]
-    E --> F[Integration Tests]
-    F --> G[Deploy to Production]
-    G --> H[Health Checks]
+    C --> D[Build Images]
+    D --> E[Deploy Backend]
+    E --> F[Deploy Frontend]
+    F --> G[Health Checks]
+    G --> H[Production Ready]
 ```
+
+## 📊 Monitoring & Analytics
+
+### Application Monitoring
+- **Health Endpoints** - System status and service availability
+- **Performance Metrics** - Response times and throughput
+- **Error Tracking** - Exception monitoring and alerting
+- **User Analytics** - Simulation completion rates and engagement
+
+### Business Metrics
+- **PDF Processing** - Upload success rates and processing times
+- **Simulation Engagement** - Scene completion and user satisfaction
+- **Content Performance** - Popular scenarios and user ratings
+- **Community Growth** - Publishing activity and user retention
+
+## 🔄 Integration Points
+
+### External Services
+- **OpenAI API** - GPT-4 for content generation and persona interactions
+- **LlamaParse** - Advanced PDF processing and data extraction
+- **Image Generation** - AI-powered scene visualization
+- **Email Services** - User notifications and marketing
+
+### Internal Services
+- **ChatOrchestrator** - Core simulation engine
+- **PDF Processor** - Document analysis and content extraction
+- **Publishing System** - Community marketplace and content sharing
+- **User Progress** - Learning analytics and completion tracking
 
 ## 📖 Documentation Navigation
 
 ### Getting Started
-1. **[Quick Start](../Developer_Guide.md#quick-start)** - Get up and running in 5 minutes
+1. **[Quick Start Guide](../../QUICK_START.md)** - Get up and running in 5 minutes
 2. **[API Reference](../API_Reference.md)** - Complete API documentation
-3. **[Database Schema](./database-schema.md)** - Understand the data model
+3. **[Integration Guide](../../CHAT_ORCHESTRATOR_INTEGRATION.md)** - ChatOrchestrator setup
 
 ### Development
 1. **[Developer Guide](../Developer_Guide.md)** - Complete development setup
-2. **[Testing Guide](../Developer_Guide.md#testing-strategy)** - Testing strategies and examples
-3. **[API Testing](../API_Testing_Guide.md)** - Practical API testing examples
+2. **[Testing Guide](../API_Testing_Guide.md)** - API testing examples
+3. **[Database Schema](./database-schema.md)** - Data model documentation
 
 ### Architecture
-1. **[System Overview](./system-overview.md)** - High-level system architecture
-2. **[Database Design](./database-schema.md)** - Complete database schema
-3. **[User Workflows](./user-workflow.md)** - Visual workflow diagrams
+1. **[System Overview](./system-overview.md)** - Detailed system architecture
+2. **[User Workflows](./user-workflow.md)** - Visual workflow diagrams
+3. **[Database Design](./database-schema.md)** - Complete schema documentation
 
 ## 🛠️ Development Tools
 
 ### Required Tools
 - **Python 3.11+** - Backend development
 - **Node.js 18+** - Frontend development
-- **PostgreSQL** - Database (local or Neon cloud)
+- **PostgreSQL** - Database (local or cloud)
 - **Git** - Version control
 
 ### Recommended Tools
-- **VS Code** - Code editor with extensions
-- **Postman** - API testing
-- **Docker** - Containerization
-- **GitHub Desktop** - Git GUI
+- **VS Code** - Code editor with Python and TypeScript extensions
+- **Postman** - API testing and development
+- **Docker** - Containerization for consistent environments
+- **GitHub Desktop** - Git GUI for easier repository management
 
 ## 🔄 Continuous Integration
 
 ### CI/CD Pipeline
 - **GitHub Actions** - Automated testing and deployment
-- **Code Quality** - Black formatting, flake8 linting
-- **Security Scanning** - Vulnerability detection
-- **Performance Testing** - Load testing
+- **Code Quality** - Linting, formatting, and security scanning
+- **Test Coverage** - Comprehensive unit and integration testing
+- **Performance Testing** - Load testing for API endpoints
 
 ### Quality Gates
 - **All Tests Pass** - Unit, integration, and API tests
-- **Code Coverage** - Minimum 80% coverage
+- **Code Coverage** - Minimum 80% test coverage
 - **Security Scan** - No high-severity vulnerabilities
-- **Performance** - Response time under 200ms
-
-## 📊 Monitoring & Analytics
-
-### Application Monitoring
-- **Health Checks** - System status monitoring
-- **Performance Metrics** - Response time tracking
-- **Error Tracking** - Exception monitoring
-- **User Analytics** - Feature usage tracking
-
-### Business Metrics
-- **User Engagement** - Active users, session duration
-- **Content Performance** - Popular agents, scenarios
-- **Community Growth** - User acquisition, retention
-- **Platform Usage** - Simulation frequency, success rates
+- **Performance** - API response times under 500ms
 
 ## 🤝 Contributing
 
@@ -450,28 +468,30 @@ graph LR
 1. **Fork Repository** - Create your own copy
 2. **Create Feature Branch** - Work on isolated features
 3. **Follow Standards** - Code style and testing requirements
-4. **Submit Pull Request** - Code review process
+4. **Submit Pull Request** - Code review and integration
 
 ### Code Standards
-- **Python** - Black formatting, type hints, docstrings
-- **TypeScript** - Strict typing, ESLint rules
-- **Testing** - Minimum 80% test coverage
-- **Documentation** - Update relevant documentation
+- **Python** - Black formatting, type hints, comprehensive docstrings
+- **TypeScript** - Strict typing, ESLint rules, component documentation
+- **Testing** - Minimum 80% test coverage with meaningful tests
+- **Documentation** - Update relevant documentation with changes
 
 ---
 
 ## 📞 Support & Community
 
 ### Getting Help
-- **[GitHub Issues](https://github.com/yourusername/crewai-platform/issues)** - Bug reports and feature requests
-- **[Discord Server](https://discord.gg/crewai)** - Community discussions
-- **[Documentation](https://docs.crewai-platform.com)** - Comprehensive guides
+- **[GitHub Issues](https://github.com/HendrikKrack/ai-agent-education-platform/issues)** - Bug reports and feature requests
+- **[Documentation](https://github.com/HendrikKrack/ai-agent-education-platform)** - Comprehensive guides and examples
+- **[Integration Examples](../../CHAT_ORCHESTRATOR_INTEGRATION.md)** - Implementation guides
 
 ### Contributing
-- **[Contributing Guidelines](../CONTRIBUTING.md)** - How to contribute
-- **[Code of Conduct](../CODE_OF_CONDUCT.md)** - Community standards
-- **[Security Policy](../SECURITY.md)** - Security vulnerability reporting
+- **[Contributing Guidelines](../../CONTRIBUTING.md)** - How to contribute to the project
+- **[Code of Conduct](../../CODE_OF_CONDUCT.md)** - Community standards and expectations
+- **[Security Policy](../../SECURITY.md)** - Security vulnerability reporting
 
 ---
 
-This documentation is continuously updated as the platform evolves. For the latest information, please check the [GitHub repository](https://github.com/yourusername/crewai-platform) and join our community discussions. 
+This documentation reflects the current state of the AI Agent Education Platform with integrated ChatOrchestrator system, PDF-to-simulation pipeline, and linear simulation experiences. The platform is designed to provide immersive educational experiences through AI-powered business case study simulations.
+
+For the latest information and updates, please check the [GitHub repository](https://github.com/HendrikKrack/ai-agent-education-platform) and review the comprehensive integration guide in `CHAT_ORCHESTRATOR_INTEGRATION.md`. 

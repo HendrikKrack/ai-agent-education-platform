@@ -2,135 +2,102 @@
 
 ## Overview
 
-This document outlines the complete user journey through the CrewAI Agent Builder Platform, from initial registration to advanced community participation. The platform is designed to align with CrewAI's architecture where **scenarios contain tasks**, **agents provide capabilities**, and **crews organize collaborative work**. The platform supports multiple user personas and workflows.
+This document outlines the complete user journey through the **AI Agent Education Platform**, from PDF upload to immersive simulation experiences. The platform is designed around a **PDF-to-simulation pipeline** with integrated **ChatOrchestrator** system, enabling educators and students to transform business case studies into engaging, linear, multi-scene learning experiences with dynamic AI persona interactions.
 
 ## User Personas
 
-### 1. **Educator** - Creates educational scenarios and manages classroom simulations
-### 2. **Student** - Participates in simulations and learns from AI agent interactions
-### 3. **Developer** - Builds custom agents and tools for the community
-### 4. **Business Professional** - Uses simulations for training and decision-making
+### 1. **Educator** - Uploads business case PDFs and creates educational simulations for classroom use
+### 2. **Student** - Participates in immersive simulations and learns through AI persona interactions
+### 3. **Content Creator** - Develops and publishes scenarios for the community marketplace
+### 4. **Business Professional** - Uses simulations for training and professional development
 
-## CrewAI Architecture Alignment
+## Platform Architecture Alignment
 
-The platform follows CrewAI's architectural principles where:
+The platform follows a **PDF-to-simulation pipeline** where:
 
-- **Scenarios** define the business context and contain the tasks that need to be completed
-- **Agents** are specialized team members with specific roles, goals, and capabilities
-- **Tasks** are scenario-specific work items that can be handled by individual agents or collaboratively by the crew
-- **Crews** organize agents to work together on completing scenario tasks
+- **PDF Documents** are intelligently processed to extract business scenarios, key figures, and learning opportunities
+- **AI Analysis** transforms case studies into structured scenarios with personas, scenes, and objectives
+- **Linear Simulations** provide sequential learning experiences with clear progression and goals
+- **ChatOrchestrator** manages multi-scene interactions with AI personas based on personality traits
+- **Community Marketplace** enables sharing and discovery of educational content
 
-This alignment ensures that:
-1. **Tasks are contextual** - They belong to specific business scenarios
-2. **Agents are reusable** - The same agent can work on different scenarios
-3. **Collaboration is natural** - Multiple agents can work together on complex tasks
-4. **Flexibility is maintained** - Tasks can be assigned to specific agents or handled by the collective crew
+This architecture ensures that:
+1. **Content is contextual** - Scenarios are derived from real business case studies
+2. **Learning is structured** - Clear progression through scenes with defined objectives
+3. **Interactions are meaningful** - AI personas respond based on their roles and personalities
+4. **Experiences are immersive** - Rich visual scenes and natural conversation flow
 
 ## Complete User Journey
 
 ```mermaid
 graph TD
-    A[User Visits Platform] --> B{New User?}
-    B -->|Yes| C[Register Account]
-    B -->|No| D[Login]
+    A[User Visits Platform] --> B{User Type?}
+    B -->|New User| C[Register Account]
+    B -->|Existing User| D[Login]
     
     C --> E[Email Verification]
     D --> F[Dashboard]
     E --> F
     
     F --> G{User Goal?}
-    G -->|Create Agent| H[Agent Builder]
-    G -->|Create Scenario| I[Scenario Builder]
-    G -->|Create Crew| J[Crew Builder]
-    G -->|Run Simulation| K[Simulation Runner]
-    G -->|Contribute Tools| L[Tool Development]
-    G -->|Explore Community| M[Community Marketplace]
-    G -->|Manage Profile| N[Profile Management]
+    G -->|Upload PDF Case Study| H[PDF-to-Simulation Pipeline]
+    G -->|Start Simulation| I[Browse Available Scenarios]
+    G -->|Create Manual Scenario| J[Scenario Builder]
+    G -->|Explore Marketplace| K[Community Marketplace]
+    G -->|Manage Profile| L[Profile Management]
     
-    %% Agent Building Path
-    H --> H1[Choose Agent Type]
-    H1 --> H2[Define Agent Role & Goal]
-    H2 --> H3[Write Agent Backstory]
-    H3 --> H4[Configure Agent Capabilities]
-    H4 --> H5[Select/Create Tools]
-    H5 --> H6[Test Agent Behavior]
-    H6 --> H7[Publish to Community]
-    H7 --> F
+    %% PDF-to-Simulation Pipeline
+    H --> H1[Upload PDF Document]
+    H1 --> H2[AI Processing & Analysis]
+    H2 --> H3[Review Generated Content]
+    H3 --> H4[Customize Personas & Scenes]
+    H4 --> H5[Save Scenario]
+    H5 --> H6[Start Simulation or Publish]
+    H6 --> F
     
-    %% Scenario Building Path
-    I --> I1[Choose Scenario Source]
-    I1 --> I2{Manual or PDF?}
-    I2 -->|Manual| I3[Write Scenario Details]
-    I2 -->|PDF| I4[Upload PDF Document]
-    I3 --> I5[Define Learning Objectives]
-    I4 --> I6[AI Extract Scenario Data]
-    I5 --> I7[Define Scenario Tasks]
-    I6 --> I5
-    I7 --> I8[Configure Task Dependencies]
-    I8 --> I9[Set Task Priorities]
-    I9 --> I10[Publish Scenario]
+    %% Simulation Experience Path
+    I --> I1[Select Scenario]
+    I1 --> I2[Review Scenario Details]
+    I2 --> I3[Start Linear Simulation]
+    I3 --> I4[ChatOrchestrator Introduction]
+    I4 --> I5[Scene Progression]
+    I5 --> I6[AI Persona Interactions]
+    I6 --> I7{Scene Complete?}
+    I7 -->|No| I6
+    I7 -->|Yes| I8{More Scenes?}
+    I8 -->|Yes| I5
+    I8 -->|No| I9[Simulation Complete]
+    I9 --> I10[Review Results & Feedback]
     I10 --> F
     
-    %% Crew Building Path
-    J --> J1[Select Crew Type]
-    J1 --> J2[Choose Business Scenario]
-    J2 --> J3[Review Scenario Tasks]
-    J3 --> J4[Assign Agents to Crew Roles]
-    J4 --> J5[Configure Crew Process]
-    J5 --> J6[Map Tasks to Crew Workflow]
-    J6 --> J7[Select Tools & Capabilities]
-    J7 --> J8[Test Crew Collaboration]
-    J8 --> J9[Save Crew Configuration]
-    J9 --> F
+    %% Manual Scenario Building Path
+    J --> J1[Define Scenario Details]
+    J1 --> J2[Create Personas Manually]
+    J2 --> J3[Design Learning Scenes]
+    J3 --> J4[Set Learning Objectives]
+    J4 --> J5[Configure Scene Progression]
+    J5 --> J6[Test Scenario]
+    J6 --> J7[Publish to Community]
+    J7 --> F
     
-    %% Simulation Path (CrewAI Aligned)
-    K --> K1[Select Scenario with Tasks]
-    K1 --> K2[Choose/Build Agents for Scenario]
-    K2 --> K3[Review Scenario Tasks]
-    K3 --> K4{Task Assignment?}
-    K4 -->|Assign Specific| K5[Assign Tasks to Agents]
-    K4 -->|Crew Collaborative| K6[Let Crew Handle Tasks]
-    K5 --> K7[Configure Crew Process]
-    K6 --> K7
-    K7 --> K8[Start CrewAI Simulation]
-    K8 --> K9[Agents Collaborate on Tasks]
-    K9 --> K10[Interact with Crew]
-    K10 --> K11{Continue?}
-    K11 -->|Yes| K10
-    K11 -->|No| K12[Complete Simulation]
-    K12 --> K13[Review Task Results]
-    K13 --> F
-    
-    %% Tool Development Path
-    L --> L1[Choose Tool Type]
-    L1 --> L2[Write Tool Code]
-    L2 --> L3[Define Tool Schema]
-    L3 --> L4[Test Tool Functionality]
-    L4 --> L5{Tool Ready?}
-    L5 -->|No| L2
-    L5 -->|Yes| L6[Submit to Community]
-    L6 --> L7[Community Review]
-    L7 --> L8[Tool Published]
-    L8 --> F
-    
-    %% Community Path
-    M --> M1[Browse Public Content]
-    M1 --> M2[Filter by Category/Tags]
-    M2 --> M3[View Details]
-    M3 --> M4{Action?}
-    M4 -->|Use| M5[Add to Collection]
-    M4 -->|Clone| M6[Clone and Customize]
-    M4 -->|Review| M7[Rate and Comment]
-    M5 --> F
-    M6 --> H
-    M7 --> F
+    %% Community Marketplace Path
+    K --> K1[Browse Published Scenarios]
+    K1 --> K2[Filter by Category/Industry]
+    K2 --> K3[View Scenario Details]
+    K3 --> K4{Action?}
+    K4 -->|Use| K5[Start Simulation]
+    K4 -->|Rate/Review| K6[Leave Feedback]
+    K4 -->|Clone/Customize| K7[Create Custom Version]
+    K5 --> I3
+    K6 --> F
+    K7 --> J
     
     %% Profile Management Path
-    N --> N1[Update Profile Info]
-    N1 --> N2[Privacy Settings]
-    N2 --> N3[View My Content]
-    N3 --> N4[Analytics Dashboard]
-    N4 --> F
+    L --> L1[Update Profile Information]
+    L1 --> L2[View Simulation History]
+    L2 --> L3[Manage Published Content]
+    L3 --> L4[Analytics Dashboard]
+    L4 --> F
 ```
 
 ## Detailed Workflow Breakdown
@@ -146,7 +113,9 @@ sequenceDiagram
     participant E as Email Service
     
     %% Registration Flow
-    U->>F: Access registration page
+    U->>F: Access platform
+    F->>U: Show landing page with features
+    U->>F: Click "Get Started"
     F->>U: Show registration form
     U->>F: Submit registration data
     F->>A: POST /users/register
@@ -155,10 +124,9 @@ sequenceDiagram
     A->>A: Hash password
     A->>D: Create user record
     D->>A: User created
-    A->>E: Send verification email
-    E->>U: Verification email sent
+    A->>E: Send verification email (optional)
     A->>F: Registration success
-    F->>U: Show success message
+    F->>U: Welcome to dashboard
     
     %% Login Flow
     U->>F: Enter credentials
@@ -167,536 +135,580 @@ sequenceDiagram
     D->>A: User data
     A->>A: Generate JWT token
     A->>F: Return token + user data
-    F->>F: Store token
+    F->>F: Store token in localStorage
     F->>U: Redirect to dashboard
 ```
 
-### 2. Agent Creation Workflow
+### 2. PDF-to-Simulation Pipeline
 
 ```mermaid
 flowchart TD
-    A[Start Agent Creation] --> B[Choose Creation Method]
-    B --> C{Method?}
-    C -->|From Scratch| D[Basic Agent Form]
-    C -->|From Template| E[Select Template]
-    C -->|Clone Existing| F[Choose Agent to Clone]
+    A[Start PDF Upload] --> B[Select PDF File]
+    B --> C[Drag & Drop or Browse]
+    C --> D[File Validation]
+    D --> E{Valid PDF?}
+    E -->|No| F[Show Error Message]
+    E -->|Yes| G[Upload to Server]
     
-    D --> G[Configure Agent Properties]
-    E --> G
-    F --> G
+    F --> C
+    G --> H[Show Upload Progress]
+    H --> I[LlamaParse Processing]
+    I --> J[Extract Text & Structure]
+    J --> K[OpenAI Analysis]
+    K --> L[Generate Scenario Data]
     
-    G --> H[Set Role & Goal]
-    H --> I[Write Backstory]
-    I --> J[Select Tools]
-    J --> K{Custom Tools?}
-    K -->|Yes| L[Create Custom Tool]
-    K -->|No| M[Configure Existing Tools]
+    L --> M[Extract Key Figures → Personas]
+    M --> N[Identify Learning Scenes]
+    N --> O[Create Learning Objectives]
+    O --> P[Generate Scene Images]
+    P --> Q[Save to Database]
     
-    L --> N[Write Tool Code]
-    N --> O[Test Tool]
-    O --> P{Tool Works?}
-    P -->|No| N
-    P -->|Yes| M
+    Q --> R[Show Generated Content]
+    R --> S{User Review}
+    S -->|Needs Changes| T[Edit Personas & Scenes]
+    S -->|Looks Good| U[Save Scenario]
     
-    M --> Q[Set Agent Behavior]
-    Q --> R[Configure Marketplace Settings]
-    R --> S[Test Agent]
-    S --> T{Agent Ready?}
-    T -->|No| G
-    T -->|Yes| U[Save Agent]
-    U --> V{Publish Public?}
-    V -->|Yes| W[Publish to Community]
-    V -->|No| X[Save Private]
-    W --> Y[Agent Published]
+    T --> V[Update Content]
+    V --> U
+    U --> W{Next Action?}
+    W -->|Start Simulation| X[Begin Linear Experience]
+    W -->|Publish| Y[Share with Community]
+    W -->|Save Draft| Z[Return to Dashboard]
+    
+    X --> AA[Simulation Ready]
+    Y --> BB[Published Successfully]
+    Z --> CC[Draft Saved]
+```
+
+### 3. Linear Simulation Experience with ChatOrchestrator
+
+```mermaid
+flowchart TD
+    A[User Starts Simulation] --> B[Load Scenario & Personas]
+    B --> C[Initialize ChatOrchestrator]
+    C --> D[Display Scene 1 Introduction]
+    D --> E[Show Available Commands]
+    E --> F[User Types 'begin']
+    
+    F --> G[Generate Scene Context]
+    G --> H[Introduce AI Personas]
+    H --> I[Present Learning Objective]
+    I --> J[Start Conversation]
+    
+    J --> K{User Input Type?}
+    K -->|@mention| L[Direct Persona Interaction]
+    K -->|help| M[Show Available Commands]
+    K -->|general chat| N[Multi-Persona Response]
+    K -->|progress command| O[Check Scene Status]
+    
+    L --> P[Persona-Specific Response]
+    M --> Q[Command List Display]
+    N --> R[AI Orchestrator Response]
+    O --> S[Scene Progress Update]
+    
+    P --> T[Update Conversation State]
+    Q --> J
+    R --> T
+    S --> T
+    
+    T --> U{Scene Goal Achieved?}
+    U -->|No| V{Max Attempts Reached?}
+    U -->|Yes| W[Scene Complete]
+    
+    V -->|No| J
+    V -->|Yes| X[Force Progression with Feedback]
+    
+    W --> Y[Scene Summary & Feedback]
     X --> Y
-    Y --> Z[Return to Dashboard]
+    Y --> Z{More Scenes?}
+    Z -->|Yes| AA[Load Next Scene]
+    Z -->|No| BB[Simulation Complete]
+    
+    AA --> D
+    BB --> CC[Final Results & Analytics]
+    CC --> DD[Return to Dashboard]
 ```
 
-### 3. CrewAI-Aligned Scenario Building
-
-```mermaid
-flowchart TD
-    A[Start Scenario Creation] --> B[Choose Scenario Source]
-    B --> C{Source Type?}
-    C -->|Manual| D[Write Scenario Details]
-    C -->|PDF Upload| E[Upload PDF Document]
-    C -->|Template| F[Select Template]
-    C -->|Marketplace| G[Clone from Marketplace]
-    
-    D --> H[Define Learning Objectives]
-    E --> I[AI Extract Scenario Data]
-    F --> H
-    G --> H
-    
-    I --> H
-    H --> J[Define Scenario Tasks]
-    J --> K[Configure Task Dependencies]
-    K --> L[Set Task Priorities]
-    L --> M[Define Expected Outputs]
-    M --> N{Task Assignment?}
-    N -->|Pre-assign| O[Assign Tasks to Agent Roles]
-    N -->|Crew Collaborative| P[Let Crew Handle Tasks]
-    
-    O --> Q[Review Task Configuration]
-    P --> Q
-    Q --> R[Test Task Definitions]
-    R --> S{Tasks Ready?}
-    S -->|No| J
-    S -->|Yes| T[Save Scenario]
-    T --> U[Publish to Community]
-    U --> V[Return to Dashboard]
-```
-
-### 4. Crew Configuration Workflow
-
-```mermaid
-flowchart TD
-    A[Start Crew Creation] --> B[Select Business Scenario]
-    B --> C[Review Scenario Tasks]
-    C --> D[Select Crew Type]
-    D --> E{Crew Type?}
-    E -->|Business Launch| F[Marketing → Finance → Product → Operations]
-    E -->|Crisis Management| G[Operations-led Hierarchy]
-    E -->|Innovation| H[Product-led Collaboration]
-    E -->|Strategic Planning| I[Consensus Process]
-    E -->|Custom| J[Define Custom Process]
-    
-    F --> K[Choose/Build Agents for Roles]
-    G --> K
-    H --> K
-    I --> K
-    J --> K
-    
-    K --> L[Map Tasks to Crew Workflow]
-    L --> M[Configure Agent Roles]
-    M --> N[Set Role Priorities]
-    N --> O[Enable/Disable Tools]
-    O --> P[Configure Custom Tools]
-    P --> Q[Test Crew Collaboration]
-    Q --> R{Crew Working?}
-    R -->|No| M
-    R -->|Yes| S[Save Configuration]
-    S --> T{Publish Public?}
-    T -->|Yes| U[Publish to Community]
-    T -->|No| V[Save Private]
-    U --> W[Crew Published]
-    V --> W
-    W --> X[Return to Dashboard]
-```
-
-### 4. CrewAI Simulation Execution Flow
+### 4. ChatOrchestrator Interaction Patterns
 
 ```mermaid
 sequenceDiagram
     participant U as User
     participant F as Frontend
     participant A as API
-    participant C as CrewAI Engine
+    participant CO as ChatOrchestrator
+    participant AI as OpenAI
     participant D as Database
     
-    %% Simulation Setup
+    %% Scene Initialization
     U->>F: Start simulation
-    F->>A: POST /simulations/
-    A->>D: Create simulation record
-    A->>D: Get scenario details
-    A->>D: Get agent configurations
-    A->>D: Snapshot agents/tasks
-    D->>A: Simulation data
-    A->>C: Initialize CrewAI
-    C->>A: Crew ready
-    A->>F: Simulation started
-    F->>U: Show simulation interface
+    F->>A: POST /api/simulation/start
+    A->>D: Load scenario, personas, scenes
+    D-->>A: Simulation data
+    A->>CO: Initialize orchestrator with scenario context
+    CO->>CO: Build system prompt with personas & scene info
+    CO-->>A: Orchestrator ready
+    A-->>F: Simulation initialized with scene introduction
+    F-->>U: Display rich scene with personas and objective
     
-    %% Simulation Interaction
-    loop Chat Loop
-        U->>F: Send message
-        F->>A: POST /simulations/{id}/chat
-        A->>C: Process user input
-        C->>C: Agent collaboration
-        C->>A: Crew response
-        A->>D: Save message history
-        A->>F: Return response
-        F->>U: Display response
-    end
+    %% Begin Command
+    U->>F: Type "begin"
+    F->>A: POST /api/simulation/linear-chat {"message": "begin"}
+    A->>CO: Process begin command
+    CO->>AI: Generate scene introduction with persona interactions
+    AI-->>CO: Rich scene introduction with AI personas
+    CO->>D: Save interaction to conversation_logs
+    CO-->>A: Scene introduction response
+    A-->>F: Formatted scene introduction
+    F-->>U: Immersive scene presentation
     
-    %% Simulation Completion
-    U->>F: Complete simulation
-    F->>A: POST /simulations/{id}/complete
-    A->>D: Update simulation status
-    A->>D: Generate summary
-    D->>A: Completion data
-    A->>F: Simulation completed
-    F->>U: Show results summary
+    %% @Mention Interaction
+    U->>F: Type "@wanjohi What are your main concerns?"
+    F->>A: POST /api/simulation/linear-chat
+    A->>CO: Process @mention for specific persona
+    CO->>CO: Load Wanjohi's personality traits & context
+    CO->>AI: Generate persona-specific response
+    AI-->>CO: Wanjohi's response based on personality & role
+    CO->>CO: Update scene progress and user understanding
+    CO->>D: Log conversation with persona attribution
+    CO-->>A: Persona response with scene progress
+    A-->>F: Wanjohi's response + progress indicators
+    F-->>U: Natural conversation with visual persona indicators
+    
+    %% Scene Completion Check
+    CO->>CO: Evaluate scene goal achievement
+    CO->>AI: Assess if learning objectives met
+    AI-->>CO: Goal achievement assessment
+    CO->>D: Update scene_progress table
+    CO-->>A: Scene completion status
+    A-->>F: Progress update or scene transition
+    F-->>U: Continue or advance to next scene
 ```
 
-### 5. Tool Development Workflow
+### 5. Community Marketplace Workflow
 
 ```mermaid
 flowchart TD
-    A[Start Tool Development] --> B[Choose Tool Category]
-    B --> C{Tool Category?}
-    C -->|Business Analysis| D[Business Analysis Template]
-    C -->|Financial| E[Financial Tool Template]
-    C -->|Market Research| F[Market Research Template]
-    C -->|Communication| G[Communication Tool Template]
-    C -->|Custom| H[Custom Tool Template]
+    A[User Enters Marketplace] --> B[Browse Categories]
+    B --> C{Filter Options?}
+    C -->|Industry| D[Filter by Industry]
+    C -->|Difficulty| E[Filter by Difficulty Level]
+    C -->|Rating| F[Filter by User Rating]
+    C -->|Recent| G[Sort by Recently Added]
     
-    D --> I[Define Tool Purpose]
-    E --> I
-    F --> I
-    G --> I
-    H --> I
+    D --> H[View Filtered Results]
+    E --> H
+    F --> H
+    G --> H
     
-    I --> J[Write Tool Code]
-    J --> K[Define Input Schema]
-    K --> L[Define Output Schema]
-    L --> M[Add Usage Examples]
-    M --> N[Test Tool Functionality]
-    N --> O{Tool Works?}
-    O -->|No| J
-    O -->|Yes| P[Add Documentation]
-    P --> Q[Security Review]
-    Q --> R{Security OK?}
-    R -->|No| J
-    R -->|Yes| S[Submit to Community]
-    S --> T[Community Review Process]
-    T --> U[Integration Testing]
-    U --> V{Tests Pass?}
-    V -->|No| J
-    V -->|Yes| W[Tool Approved]
-    W --> X[Add to Tool Registry]
-    X --> Y[Tool Available]
-    Y --> Z[Return to Dashboard]
+    H --> I[Select Scenario]
+    I --> J[View Scenario Details]
+    J --> K[Review Personas & Scenes]
+    K --> L[Check User Reviews]
+    L --> M{User Action?}
+    
+    M -->|Start Simulation| N[Begin Simulation Experience]
+    M -->|Rate & Review| O[Leave Feedback]
+    M -->|Clone & Customize| P[Create Custom Version]
+    M -->|Add to Favorites| Q[Save to Profile]
+    M -->|Share| R[Generate Share Link]
+    
+    N --> S[Redirect to Simulation]
+    O --> T[Submit Review Form]
+    P --> U[Open in Scenario Builder]
+    Q --> V[Added to Favorites]
+    R --> W[Share Link Generated]
+    
+    T --> X[Review Published]
+    U --> Y[Customize Scenario]
+    V --> Z[Continue Browsing]
+    W --> Z
+    X --> Z
+    Y --> AA[Save Custom Version]
+    AA --> Z
+    Z --> A
 ```
 
-### 6. Community Interaction Flow
-
-```mermaid
-graph TD
-    A[User Enters Community] --> B[Browse Categories]
-    B --> C{Content Type?}
-    C -->|Agents| D[Agent Marketplace]
-    C -->|Tools| E[Tool Library]
-    C -->|Crews| F[Crew Configurations]
-    C -->|Scenarios| G[Scenario Collection]
-    C -->|Collections| H[User Collections]
-    
-    D --> I[Filter & Search]
-    E --> I
-    F --> I
-    G --> I
-    H --> I
-    
-    I --> J[View Content Details]
-    J --> K[Check Ratings/Reviews]
-    K --> L{User Action?}
-    
-    L -->|Download/Use| M[Add to My Collection]
-    L -->|Clone| N[Clone & Customize]
-    L -->|Review| O[Rate & Comment]
-    L -->|Share| P[Share with Others]
-    
-    M --> Q[Success Notification]
-    N --> R[Open in Builder]
-    O --> S[Submit Review]
-    P --> T[Generate Share Link]
-    
-    Q --> U[Continue Browsing]
-    R --> V[Customize Content]
-    S --> W[Review Published]
-    T --> X[Share Link Created]
-    
-    U --> A
-    V --> Y[Save Customized Version]
-    W --> U
-    X --> U
-    Y --> U
-```
-
-## Resource Management Workflow
+### 6. Scenario Publishing Workflow
 
 ```mermaid
 flowchart TD
-    A[User Starts Simulation] --> B[Load Scenario]
-    B --> C[Check Required Resources]
-    C --> D{All Resources Available?}
-    D -->|Yes| E[Execute Simulation]
-    D -->|No| F[Identify Missing Resources]
+    A[User Completes Scenario] --> B{Publish Decision?}
+    B -->|Keep Private| C[Save as Draft]
+    B -->|Publish| D[Publishing Form]
     
-    F --> G[Check Fallback Strategies]
-    G --> H{Fallback Available?}
-    H -->|Yes| I[Apply Fallback Strategy]
-    H -->|No| J[Fail Simulation]
+    C --> E[Scenario Saved Privately]
+    D --> F[Fill Publishing Details]
+    F --> G[Set Category & Tags]
+    G --> H[Choose Difficulty Level]
+    H --> I[Set Estimated Duration]
+    I --> J[Write Description]
+    J --> K[Upload Preview Image]
+    K --> L[Review Publishing Info]
     
-    I --> K{Fallback Type?}
-    K -->|Substitute| L[Use Similar Public Resource]
-    K -->|Skip| M[Skip Missing Component]
-    K -->|Fail| N[Fail Gracefully]
+    L --> M{Ready to Publish?}
+    M -->|No| N[Edit Details]
+    M -->|Yes| O[Submit for Publishing]
     
-    L --> O[Log Fallback Action]
-    M --> O
-    N --> O
+    N --> F
+    O --> P[Validate Content]
+    P --> Q{Validation Passed?}
+    Q -->|No| R[Show Validation Errors]
+    Q -->|Yes| S[Publish to Marketplace]
     
-    O --> P[Continue Simulation]
-    P --> Q[Track Resource Usage]
-    Q --> R[Update Analytics]
-    R --> S[Complete Simulation]
-    
-    J --> T[Show Error Message]
-    T --> U[Suggest Alternatives]
-    U --> V[User Chooses Alternative]
-    V --> A
+    R --> N
+    S --> T[Generate SEO-Friendly URL]
+    T --> U[Create Marketplace Listing]
+    U --> V[Send Notification to User]
+    V --> W[Scenario Published Successfully]
+    W --> X[Return to Dashboard]
 ```
 
-## User Dashboard Workflow
+## Advanced User Interactions
 
-```mermaid
-graph TB
-    A[User Dashboard] --> B[Quick Stats]
-    A --> C[Recent Activity]
-    A --> D[My Content]
-    A --> E[Recommendations]
-    A --> F[Community Updates]
-    
-    B --> B1[Agents Created: 5]
-    B --> B2[Simulations Run: 12]
-    B --> B3[Community Score: 4.2]
-    B --> B4[Downloads: 150]
-    
-    C --> C1[Last Simulation]
-    C --> C2[Recent Reviews]
-    C --> C3[New Followers]
-    C --> C4[Updated Content]
-    
-    D --> D1[My Agents]
-    D --> D2[My Scenarios]
-    D --> D3[My Collections]
-    D --> D4[My Tools]
-    
-    D1 --> D1A[Edit Agent]
-    D1 --> D1B[View Analytics]
-    D1 --> D1C[Manage Visibility]
-    
-    E --> E1[Trending Agents]
-    E --> E2[Popular Scenarios]
-    E --> E3[New Tools]
-    E --> E4[Featured Collections]
-    
-    F --> F1[Platform Updates]
-    F --> F2[Community Events]
-    F --> F3[New Features]
-    F --> F4[Success Stories]
-```
-
-## Error Handling Workflow
+### 1. Multi-Scene Progression Management
 
 ```mermaid
 graph TD
-    A[User Action] --> B[API Request]
-    B --> C{Request Valid?}
-    C -->|No| D[Validation Error]
-    C -->|Yes| E[Process Request]
+    A[Scene Management System] --> B[Scene State Tracking]
+    A --> C[Progress Validation]
+    A --> D[Adaptive Difficulty]
+    A --> E[Hint System]
     
-    D --> D1[400 Bad Request]
-    D1 --> D2[Show Error Message]
-    D2 --> D3[Highlight Invalid Fields]
-    D3 --> D4[User Corrects Input]
-    D4 --> A
+    B --> B1[Current Scene Position]
+    B --> B2[Completion Status]
+    B --> B3[Time Spent Tracking]
+    B --> B4[Attempt Counter]
     
-    E --> F{Authentication OK?}
-    F -->|No| G[401 Unauthorized]
-    F -->|Yes| H[Execute Operation]
+    C --> C1[Learning Objective Assessment]
+    C --> C2[User Understanding Level]
+    C --> C3[Goal Achievement Criteria]
+    C --> C4[Forced Progression Rules]
     
-    G --> G1[Redirect to Login]
-    G1 --> G2[Show Login Form]
-    G2 --> G3[User Authenticates]
-    G3 --> A
+    D --> D1[Performance-Based Adjustments]
+    D --> D2[Persona Response Complexity]
+    D --> D3[Scene Difficulty Scaling]
+    D --> D4[Hint Frequency Adjustment]
     
-    H --> I{Operation Successful?}
-    I -->|No| J[500 Server Error]
-    I -->|Yes| K[Return Success]
-    
-    J --> J1[Log Error Details]
-    J1 --> J2[Show Generic Error]
-    J2 --> J3[Offer Support Contact]
-    J3 --> J4[User Reports Issue]
-    
-    K --> L[Update UI]
-    L --> M[Show Success Message]
-    M --> N[Update User Experience]
+    E --> E1[Context-Sensitive Hints]
+    E --> E2[Progressive Hint Levels]
+    E --> E3[Hint Trigger Conditions]
+    E --> E4[Learning Support System]
 ```
 
-## Mobile Responsiveness Flow
+### 2. AI Persona Interaction System
 
 ```mermaid
 graph LR
-    A[User Device] --> B{Screen Size?}
-    B -->|Mobile| C[Mobile Layout]
-    B -->|Tablet| D[Tablet Layout]
-    B -->|Desktop| E[Desktop Layout]
+    A[Persona Interaction Engine] --> B[Personality Trait Processing]
+    A --> C[Context Awareness]
+    A --> D[Response Generation]
+    A --> E[Conversation Memory]
     
-    C --> F[Touch-Optimized Interface]
-    D --> G[Medium-Sized Interface]
-    E --> H[Full-Featured Interface]
+    B --> B1[Analytical Level: 8/10]
+    B --> B2[Assertive Level: 7/10]
+    B --> B3[Collaborative Level: 9/10]
+    B --> B4[Risk-Taking Level: 4/10]
     
-    F --> I[Swipe Gestures]
-    F --> J[Simplified Navigation]
-    F --> K[Condensed Content]
+    C --> C1[Current Scene Context]
+    C --> C2[Previous Interactions]
+    C --> C3[User Understanding Level]
+    C --> C4[Business Challenge Status]
     
-    G --> L[Hybrid Interface]
-    G --> M[Tablet-Specific Features]
+    D --> D1[Personality-Based Responses]
+    D --> D2[Role-Appropriate Language]
+    D --> D3[Contextual Reactions]
+    D --> D4[Goal-Oriented Guidance]
     
-    H --> N[Full Feature Set]
-    H --> O[Multi-Panel Layout]
-    H --> P[Advanced Tools]
-    
-    I --> Q[Consistent Experience]
-    J --> Q
-    K --> Q
-    L --> Q
-    M --> Q
-    N --> Q
-    O --> Q
-    P --> Q
+    E --> E1[Conversation History]
+    E --> E2[Topic Tracking]
+    E --> E3[Relationship Building]
+    E --> E4[Progress Awareness]
 ```
 
-## Performance Optimization Flow
+### 3. Learning Analytics & Assessment
 
 ```mermaid
 graph TD
-    A[User Request] --> B[Load Balancer]
-    B --> C[FastAPI Server]
-    C --> D[Authentication Check]
-    D --> E[Permission Validation]
-    E --> F[Database Query]
+    A[Learning Analytics System] --> B[Performance Tracking]
+    A --> C[Engagement Metrics]
+    A --> D[Learning Outcome Assessment]
+    A --> E[Progress Reporting]
     
-    F --> G[Query Optimization]
-    G --> H[Index Usage]
-    H --> I[Result Caching]
-    I --> J[Response Compression]
-    J --> K[CDN Delivery]
-    K --> L[Client Rendering]
+    B --> B1[Scene Completion Times]
+    B --> B2[Goal Achievement Scores]
+    B --> B3[Hint Usage Patterns]
+    B --> B4[Interaction Quality Metrics]
     
-    F --> M[Connection Pooling]
-    M --> N[Query Batching]
-    N --> O[Result Pagination]
-    O --> P[Lazy Loading]
-    P --> Q[Progressive Enhancement]
+    C --> C1[Message Frequency]
+    C --> C2[Session Duration]
+    C --> C3[Return Visit Patterns]
+    C --> C4[Content Interaction Depth]
     
-    L --> R[User Experience]
-    Q --> R
+    D --> D1[Learning Objective Mastery]
+    D --> D2[Skill Development Progress]
+    D --> D3[Knowledge Retention Indicators]
+    D --> D4[Application Capability Assessment]
     
-    R --> S[Performance Monitoring]
-    S --> T[Analytics Collection]
-    T --> U[Optimization Insights]
-    U --> V[Platform Improvements]
+    E --> E1[Individual Progress Reports]
+    E --> E2[Comparative Performance Analysis]
+    E --> E3[Learning Path Recommendations]
+    E --> E4[Achievement Certificates]
 ```
 
-## Integration Points
+## Error Handling & Recovery Workflows
 
-### External Service Integration
+### 1. PDF Processing Error Recovery
+
+```mermaid
+flowchart TD
+    A[PDF Processing Fails] --> B{Error Type?}
+    B -->|Parse Error| C[LlamaParse Service Issue]
+    B -->|AI Analysis Error| D[OpenAI Service Issue]
+    B -->|File Format Error| E[Invalid PDF Format]
+    B -->|Content Error| F[Insufficient Content]
+    
+    C --> G[Retry with Alternative Parser]
+    D --> H[Retry with Simplified Prompts]
+    E --> I[Show Format Requirements]
+    F --> J[Suggest Manual Scenario Creation]
+    
+    G --> K{Retry Successful?}
+    H --> K
+    K -->|Yes| L[Continue Processing]
+    K -->|No| M[Fallback to Manual Entry]
+    
+    I --> N[User Uploads New File]
+    J --> O[Redirect to Scenario Builder]
+    M --> O
+    L --> P[Processing Complete]
+    N --> A
+```
+
+### 2. Simulation Recovery & State Management
+
+```mermaid
+flowchart TD
+    A[Simulation Interruption] --> B{Interruption Type?}
+    B -->|Network Error| C[Connection Lost]
+    B -->|Session Timeout| D[User Inactive]
+    B -->|AI Service Error| E[ChatOrchestrator Failure]
+    B -->|User Navigation| F[User Left Page]
+    
+    C --> G[Auto-Reconnect Attempt]
+    D --> H[Save Current State]
+    E --> I[Fallback Response System]
+    F --> J[Save Progress to localStorage]
+    
+    G --> K{Reconnection Successful?}
+    H --> L[Session Recovery on Return]
+    I --> M[Generic Helpful Response]
+    J --> N[Resume on Page Return]
+    
+    K -->|Yes| O[Resume Simulation]
+    K -->|No| P[Show Offline Mode]
+    L --> O
+    M --> Q[Log Error & Continue]
+    N --> O
+    
+    P --> R[Queue Actions for Sync]
+    Q --> S[Monitor Service Recovery]
+    R --> T[Sync When Online]
+    S --> U[Resume Full Functionality]
+    T --> O
+    U --> O
+```
+
+## Mobile Responsiveness & Accessibility
+
+### 1. Mobile-First Design Workflow
+
+```mermaid
+graph LR
+    A[User Device Detection] --> B{Screen Size?}
+    B -->|Mobile| C[Touch-Optimized Interface]
+    B -->|Tablet| D[Hybrid Interface]
+    B -->|Desktop| E[Full-Featured Interface]
+    
+    C --> F[Simplified Navigation]
+    C --> G[Swipe Gestures]
+    C --> H[Voice Input Support]
+    C --> I[Condensed Content Display]
+    
+    D --> J[Adaptive Layout]
+    D --> K[Touch & Mouse Support]
+    D --> L[Scalable UI Elements]
+    
+    E --> M[Multi-Panel Layout]
+    E --> N[Keyboard Shortcuts]
+    E --> O[Advanced Features]
+    
+    F --> P[Consistent Experience]
+    G --> P
+    H --> P
+    I --> P
+    J --> P
+    K --> P
+    L --> P
+    M --> P
+    N --> P
+    O --> P
+```
+
+### 2. Accessibility Features
 
 ```mermaid
 graph TD
-    A[CrewAI Platform] --> B[CrewAI Framework]
-    A --> C[OpenAI API]
-    A --> D[Anthropic API]
-    A --> E[Neon PostgreSQL]
-    A --> F[Email Service]
-    A --> G[File Storage]
+    A[Accessibility System] --> B[Screen Reader Support]
+    A --> C[Keyboard Navigation]
+    A --> D[Visual Accessibility]
+    A --> E[Cognitive Accessibility]
     
-    B --> B1[Agent Execution]
-    B --> B2[Task Management]
-    B --> B3[Tool Integration]
+    B --> B1[ARIA Labels & Descriptions]
+    B --> B2[Semantic HTML Structure]
+    B --> B3[Alt Text for Images]
+    B --> B4[Audio Descriptions]
     
-    C --> C1[GPT Models]
-    C --> C2[Embedding Generation]
+    C --> C1[Tab Order Management]
+    C --> C2[Keyboard Shortcuts]
+    C --> C3[Focus Indicators]
+    C --> C4[Skip Navigation Links]
     
-    D --> D1[Claude Models]
-    D --> D2[Text Analysis]
+    D --> D1[High Contrast Mode]
+    D --> D2[Font Size Adjustment]
+    D --> D3[Color-Blind Friendly Design]
+    D --> D4[Animation Controls]
     
-    E --> E1[Data Storage]
-    E --> E2[User Management]
-    E --> E3[Analytics]
-    
-    F --> F1[Registration Emails]
-    F --> F2[Notifications]
-    F --> F3[Marketing]
-    
-    G --> G1[Avatar Storage]
-    G --> G2[Document Storage]
-    G --> G3[Export Files]
+    E --> E1[Clear Language & Instructions]
+    E --> E2[Consistent Navigation]
+    E --> E3[Error Prevention & Recovery]
+    E --> E4[Progress Indicators]
 ```
 
-## Security Workflow
+## Performance Optimization Workflows
+
+### 1. Content Loading Strategy
 
 ```mermaid
 graph TD
-    A[User Request] --> B[Rate Limiting]
-    B --> C[Input Validation]
-    C --> D[SQL Injection Prevention]
-    D --> E[XSS Protection]
-    E --> F[CSRF Protection]
-    F --> G[Authentication]
-    G --> H[Authorization]
-    H --> I[Data Encryption]
-    I --> J[Audit Logging]
-    J --> K[Process Request]
-    K --> L[Secure Response]
+    A[Page Load Optimization] --> B[Critical Path Loading]
+    A --> C[Progressive Enhancement]
+    A --> D[Caching Strategy]
+    A --> E[Lazy Loading]
     
-    B --> B1[Block Excessive Requests]
-    C --> C1[Sanitize Input Data]
-    D --> D1[Parameterized Queries]
-    E --> E1[Content Security Policy]
-    F --> F1[CSRF Tokens]
-    G --> G1[JWT Validation]
-    H --> H1[Role-Based Access]
-    I --> I1[Data at Rest/Transit]
-    J --> J1[Security Event Logging]
+    B --> B1[Essential CSS & JS First]
+    B --> B2[Above-Fold Content Priority]
+    B --> B3[Deferred Non-Critical Resources]
+    
+    C --> C1[Core Functionality Without JS]
+    C --> C2[Enhanced Features with JS]
+    C --> C3[Graceful Degradation]
+    
+    D --> D1[Browser Caching]
+    D --> D2[Service Worker Caching]
+    D --> D3[CDN Distribution]
+    D --> D4[API Response Caching]
+    
+    E --> E1[Images Below Fold]
+    E --> E2[Scene Content on Demand]
+    E --> E3[Persona Data as Needed]
+    E --> E4[Conversation History Pagination]
 ```
 
-## User Feedback Loop
+### 2. Real-Time Performance Monitoring
 
 ```mermaid
-graph TB
-    A[User Interaction] --> B[Collect Feedback]
-    B --> C[Analyze Patterns]
-    C --> D[Identify Improvements]
-    D --> E[Prioritize Changes]
-    E --> F[Implement Updates]
-    F --> G[Deploy Changes]
-    G --> H[Monitor Impact]
-    H --> I[Measure Success]
-    I --> J[Iterate Process]
-    J --> A
+graph LR
+    A[Performance Monitoring] --> B[Frontend Metrics]
+    A --> C[Backend Metrics]
+    A --> D[User Experience Metrics]
+    A --> E[Business Metrics]
     
-    B --> B1[User Ratings]
-    B --> B2[Usage Analytics]
-    B --> B3[Support Tickets]
-    B --> B4[Community Feedback]
+    B --> B1[Page Load Times]
+    B --> B2[JavaScript Errors]
+    B --> B3[Network Requests]
+    B --> B4[Memory Usage]
     
-    C --> C1[Performance Metrics]
-    C --> C2[User Satisfaction]
-    C --> C3[Feature Adoption]
-    C --> C4[Error Rates]
+    C --> C1[API Response Times]
+    C --> C2[Database Query Performance]
+    C --> C3[AI Service Latency]
+    C --> C4[Server Resource Usage]
     
-    D --> D1[Feature Requests]
-    D --> D2[Bug Fixes]
-    D --> D3[UX Improvements]
-    D --> D4[Performance Optimizations]
+    D --> D1[Core Web Vitals]
+    D --> D2[User Flow Completion]
+    D --> D3[Error Rates]
+    D --> D4[Accessibility Compliance]
+    
+    E --> E1[Simulation Completion Rates]
+    E --> E2[User Engagement Time]
+    E --> E3[Content Creation Activity]
+    E --> E4[Community Participation]
+```
+
+## Integration Points & External Services
+
+### 1. AI Service Integration Workflow
+
+```mermaid
+sequenceDiagram
+    participant P as Platform
+    participant LP as LlamaParse
+    participant OAI as OpenAI
+    participant IMG as Image Generation
+    participant DB as Database
+    
+    P->>LP: Upload PDF for processing
+    LP-->>P: Structured text extraction
+    P->>OAI: Analyze business case content
+    OAI-->>P: Scenario, personas, scenes data
+    P->>IMG: Generate scene visualization
+    IMG-->>P: Scene images with URLs
+    P->>DB: Save complete scenario data
+    DB-->>P: Scenario ready for simulation
+    P->>OAI: Initialize ChatOrchestrator
+    OAI-->>P: Orchestrator ready for user interaction
+```
+
+### 2. Community Integration Features
+
+```mermaid
+graph TD
+    A[Community Features] --> B[Content Sharing]
+    A --> C[Social Interactions]
+    A --> D[Collaborative Learning]
+    A --> E[Quality Assurance]
+    
+    B --> B1[Scenario Publishing]
+    B --> B2[Content Discovery]
+    B --> B3[Version Control]
+    B --> B4[Remix & Customization]
+    
+    C --> C1[User Reviews & Ratings]
+    C --> C2[Discussion Forums]
+    C --> C3[User Profiles & Following]
+    C --> C4[Achievement System]
+    
+    D --> D1[Group Simulations]
+    D --> D2[Peer Learning Sessions]
+    D --> D3[Instructor-Led Classes]
+    D --> D4[Study Group Formation]
+    
+    E --> E1[Content Moderation]
+    E --> E2[Quality Metrics]
+    E --> E3[Community Guidelines]
+    E --> E4[Reporting System]
 ```
 
 ## Workflow Summary
 
-The CrewAI Agent Builder Platform provides a comprehensive workflow that supports:
+The **AI Agent Education Platform** provides comprehensive workflows that support:
 
-1. **User Onboarding** - Smooth registration and authentication process
-2. **Content Creation** - Intuitive agent, tool, and scenario builders
-3. **Simulation Execution** - Robust CrewAI-powered simulation engine
-4. **Community Interaction** - Rich marketplace and collaboration features
-5. **Resource Management** - Intelligent fallback and resource tracking
-6. **Performance Optimization** - Scalable architecture with caching and CDN
-7. **Security** - Multi-layered security approach
-8. **Feedback Integration** - Continuous improvement based on user input
+1. **PDF-to-Simulation Pipeline** - Intelligent transformation of business case studies into interactive simulations
+2. **Linear Simulation Experiences** - Structured, multi-scene learning with clear objectives and progression
+3. **ChatOrchestrator Integration** - Natural conversation with AI personas based on personality traits and business context
+4. **Community Marketplace** - Content sharing, discovery, and collaboration features
+5. **Performance Optimization** - Fast, responsive, and accessible user experiences
+6. **Error Recovery** - Robust handling of service interruptions and user errors
+7. **Analytics & Assessment** - Comprehensive learning analytics and progress tracking
 
-Each workflow is designed to be user-friendly while providing powerful capabilities for both novice and expert users. The platform scales from individual learning to enterprise-level business training scenarios.
+Each workflow is designed to be intuitive and educational while providing powerful capabilities for both educators and learners. The platform scales from individual learning to classroom-wide educational experiences, supporting diverse use cases and learning styles through AI-powered business simulations.

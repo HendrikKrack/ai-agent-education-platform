@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     secret_key: str = os.getenv("SECRET_KEY", "your-secret-key-here")
     environment: str = os.getenv("ENVIRONMENT", "development")
     cors_origins: str = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
+    llamaparse_api_key: str | None = None
+    gemini_api_key: str | None = None
     
     class Config:
         env_file = parent_dir / ".env"  # Look for .env in parent directory
@@ -30,18 +32,23 @@ print(f"🔑 Secret Key: {'✅ Set' if settings.secret_key else '❌ Missing'}")
 print(f"🌍 Environment: {settings.environment}")
 
 # Database setup with SSL and connection pooling
-engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,  # Verify connections before use
-    pool_recycle=300,    # Recycle connections every 5 minutes
-    pool_size=5,         # Number of connections to maintain
-    max_overflow=10,     # Maximum connections beyond pool_size
-    connect_args={
-        "sslmode": "require",  # Require SSL connection
-        "connect_timeout": 30,  # Connection timeout
-        "application_name": "AOM_2025_Backend"
-    }
-)
+if settings.database_url.startswith("postgresql"):
+    engine = create_engine(
+        settings.database_url,
+        pool_pre_ping=True,  # Verify connections before use
+        pool_recycle=300,    # Recycle connections every 5 minutes
+        pool_size=5,         # Number of connections to maintain
+        max_overflow=10,     # Maximum connections beyond pool_size
+        connect_args={
+            "sslmode": "require",  # Require SSL connection
+            "connect_timeout": 30,  # Connection timeout
+            "application_name": "AOM_2025_Backend"
+        }
+    )
+else:
+    # Use simpler engine for SQLite (no pooling or connect_args)
+    engine = create_engine(settings.database_url)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

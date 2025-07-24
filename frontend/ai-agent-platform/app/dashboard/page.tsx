@@ -54,12 +54,18 @@ export default function Dashboard() {
     router.push("/")
   }
 
+  // Debug logging
+  console.log('Dashboard state:', { authLoading, loading, user, error })
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <Bot className="h-12 w-12 text-yellow-500 mx-auto mb-4 animate-spin" />
           <p>Loading your dashboard...</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Auth: {authLoading ? 'Loading' : 'Ready'} | Data: {loading ? 'Loading' : 'Ready'}
+          </p>
         </div>
       </div>
     )
@@ -290,7 +296,7 @@ export default function Dashboard() {
                         </Badge>
                         <div className="flex items-center text-sm text-gray-400">
                           <Star className="h-3 w-3 mr-1 fill-current text-yellow-500" />
-                          {agent.average_rating.toFixed(1)}
+                          {agent.average_rating?.toFixed(1) || 'N/A'}
                         </div>
                       </div>
                     </div>

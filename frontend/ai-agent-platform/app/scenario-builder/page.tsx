@@ -1,959 +1,1320 @@
 "use client"
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+import React, { useState, useRef, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, FileText, Upload, Bot, Plus, X, Wand2, Save, Play, AlertCircle, CheckCircle } from "lucide-react"
-import { useAuth } from "@/lib/auth-context"
-import { apiClient, Agent } from "@/lib/api"
+import { Button } from "@/components/ui/button"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Progress } from "@/components/ui/progress"
+import { Upload, Info, Users, Activity, Sparkles, X, Check } from "lucide-react"
+import Link from "next/link"
+import PersonaCard from "@/components/PersonaCard";
+import SceneCard from "@/components/SceneCard";
+import { buildApiUrl } from "@/lib/api";
+
+
+// Simple Modal component
+function Modal({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) {
+ React.useEffect(() => {
+   if (isOpen) {
+     document.body.classList.add('overflow-hidden');
+   } else {
+     document.body.classList.remove('overflow-hidden');
+   }
+   return () => {
+     document.body.classList.remove('overflow-hidden');
+   };
+ }, [isOpen]);
+ if (!isOpen) return null;
+ return (
+   <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60">
+     <div className="bg-white rounded-lg shadow-lg w-[760px] h-[80vh] flex flex-col relative p-0 resize-none">
+       <button
+         className="absolute top-4 right-4 text-gray-400 text-2xl font-bold hover:text-gray-600 z-10"
+         onClick={onClose}
+         aria-label="Close edit window"
+       >
+         &times;
+       </button>
+       {children}
+     </div>
+   </div>
+ );
+}
+
+function PersonaModal({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) {
+ React.useEffect(() => {
+   if (isOpen) {
+     document.body.classList.add('overflow-hidden');
+   } else {
+     document.body.classList.remove('overflow-hidden');
+   }
+   return () => {
+     document.body.classList.remove('overflow-hidden');
+   };
+ }, [isOpen]);
+ if (!isOpen) return null;
+ return (
+   <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60">
+     <div className="bg-white rounded-lg shadow-lg w-[760px] h-[80vh] flex flex-col relative p-0 resize-none">
+       <button
+         className="absolute top-4 right-4 text-gray-400 text-2xl font-bold hover:text-gray-600 z-10"
+         onClick={onClose}
+         aria-label="Close edit window"
+       >
+         &times;
+       </button>
+       {children}
+     </div>
+   </div>
+ );
+}
+
+function SceneModal({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) {
+ React.useEffect(() => {
+   if (isOpen) {
+     document.body.classList.add('overflow-hidden');
+   } else {
+     document.body.classList.remove('overflow-hidden');
+   }
+   return () => {
+     document.body.classList.remove('overflow-hidden');
+   };
+ }, [isOpen]);
+ if (!isOpen) return null;
+ return (
+   <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60">
+     <div className="bg-white rounded-lg shadow-lg w-[1000px] h-[80vh] flex flex-col relative p-0 resize-none">
+       <button
+         className="absolute top-4 right-4 text-gray-400 text-2xl font-bold hover:text-gray-600 z-10"
+         onClick={onClose}
+         aria-label="Close edit window"
+       >
+         &times;
+       </button>
+       {children}
+     </div>
+   </div>
+ );
+}
+
 
 export default function ScenarioBuilder() {
-  const router = useRouter()
-  const { user, isAuthenticated } = useAuth()
+ const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+ const fileInputRef = useRef<HTMLInputElement>(null)
+ const [name, setName] = useState("")
+ const [description, setDescription] = useState("")
+ const [learningOutcomes, setLearningOutcomes] = useState("")
+ const [autofillLoading, setAutofillLoading] = useState(false)
+ const [autofillError, setAutofillError] = useState<string | null>(null)
+ const [autofillResult, setAutofillResult] = useState<any>(null)
+ const [autofillStep, setAutofillStep] = useState<string>("")
+ const [autofillProgress, setAutofillProgress] = useState(0)
+ const [autofillMaxAttempts, setAutofillMaxAttempts] = useState(60)
+ const [isDragOver, setIsDragOver] = useState(false)
+ const [uploadedFiles, setUploadedFiles] = useState<File[]>([]); // For the "Upload Files" button
+ const filesInputRef = useRef<HTMLInputElement>(null);
+ const [personas, setPersonas] = useState<any[]>([]);
+ const [editingIdx, setEditingIdx] = useState<number | null>(null);
+ const [tempPersonas, setTempPersonas] = useState<any[]>([]); // Track temporary personas that haven't been saved yet
+
+ // Timeline/Tasks state
+ const [tasks, setTasks] = useState<any[]>([]);
+ const [editingTaskIdx, setEditingTaskIdx] = useState<number | null>(null);
+ const [scenes, setScenes] = useState<any[]>([]);
+ const [editingSceneIdx, setEditingSceneIdx] = useState<number | null>(null);
+
+ // Save status state
+ const [isSaved, setIsSaved] = useState(false);
+ const [isPublished, setIsPublished] = useState(false);
+ const [isSaving, setIsSaving] = useState(false);
+ const [isPublishing, setIsPublishing] = useState(false);
+ const [savedScenarioId, setSavedScenarioId] = useState<number | null>(null);
+
+ // Save and Publish handlers
+ const handleSave = async (): Promise<number | null> => {
+   if (!autofillResult) {
+     alert("No scenario data to save. Please upload and process a PDF first.");
+     return null;
+   }
+
+   // Build payload using only the latest user-edited state
+   const payload = {
+     // Only copy non-scene/persona fields from autofillResult
+     title: name || autofillResult.title,
+     description: description || autofillResult.description,
+     learning_outcomes: learningOutcomes || autofillResult.learning_outcomes,
+     student_role: autofillResult.student_role,
+     key_figures: autofillResult.key_figures,
+     // Use the latest scenes and personas state
+     scenes: normalizeScenes(scenes),
+     personas,
+   };
+
+   // Debug log to check scenes state before saving
+   console.log("Scenes state before save:", scenes);
+   console.log("Personas state before save:", personas);
+
+   setIsSaving(true);
+   try {
+     console.log("[DEBUG] Sending to save endpoint:", {
+       keys: Object.keys(payload),
+       title: payload.title,
+       key_figures_count: payload.key_figures?.length || 0,
+       scenes_count: payload.scenes?.length || 0
+     });
+     
+     const response = await fetch(buildApiUrl("/api/scenarios/save"), {
+       method: "POST",
+       headers: {
+         "Content-Type": "application/json",
+       },
+       body: JSON.stringify(payload),
+     });
+
+     if (response.ok) {
+       const result = await response.json();
+       setIsSaved(true);
+       setSavedScenarioId(result.scenario_id); // Store the scenario ID
+       console.log("Scenario saved:", result);
+       
+       // Reset save status after 3 seconds to show it's temporary
+       setTimeout(() => {
+         setIsSaved(false);
+       }, 3000);
+       
+       return result.scenario_id;
+     } else {
+       console.error("Failed to save scenario");
+       alert("Failed to save scenario. Please try again.");
+       return null;
+     }
+   } catch (error) {
+     console.error("Error saving scenario:", error);
+     alert("Error saving scenario. Please try again.");
+     return null;
+   } finally {
+     setIsSaving(false);
+   }
+ };
+
+ const handlePublish = async () => {
+   if (!autofillResult) {
+     alert("No scenario data to publish. Please save the scenario first.");
+     return;
+   }
+
+   setIsPublishing(true);
+   try {
+     // First save if not already saved
+     let scenarioId = savedScenarioId;
+     if (!isSaved || !scenarioId) {
+       scenarioId = await handleSave();
+     }
+     
+     if (!scenarioId) {
+       alert("Failed to save scenario. Cannot publish.");
+       return;
+     }
+     
+     // Actually publish the scenario
+     const publishData = {
+       category: autofillResult.industry || "Business",
+       difficulty_level: "Intermediate",
+       tags: ["case-study", "management", "teamwork"],
+       estimated_duration: 60
+     };
+     
+           const response = await fetch(buildApiUrl(`/api/scenarios/publish/${scenarioId}`), {
+       method: "POST",
+       headers: {
+         "Content-Type": "application/json",
+       },
+       body: JSON.stringify(publishData),
+     });
+
+     if (response.ok) {
+       const result = await response.json();
+       setIsPublished(true);
+       console.log("Scenario published:", result);
+       
+       // Reset publish status after 3 seconds
+       setTimeout(() => {
+         setIsPublished(false);
+       }, 3000);
+     } else {
+       console.error("Failed to publish scenario");
+       alert("Failed to publish scenario. Please try again.");
+     }
+   } catch (error) {
+     console.error("Error publishing scenario:", error);
+     alert("Error publishing scenario. Please try again.");
+   } finally {
+     setIsPublishing(false);
+   }
+ };
+
+ // Reset save status when content changes
+ const markAsUnsaved = () => {
+   setIsSaved(false);
+   setIsPublished(false);
+ };
+
+ // Handle Play Scenario - save first if needed, then navigate to chatbox
+ const handlePlayScenario = async () => {
+   if (!autofillResult) {
+     alert("No scenario data to play. Please upload and process a PDF first.");
+     return;
+   }
+
+   let scenarioId = savedScenarioId;
+   
+   // Only allow play if scenario is already saved
+   if (!scenarioId) {
+     alert("Please save the scenario before playing.");
+     return;
+   }
+
+   // Store scenario ID for chatbox
+   const chatboxData = {
+     scenario_id: scenarioId,
+     title: autofillResult.title || "Untitled Scenario"
+   };
+   
+   localStorage.setItem("chatboxScenario", JSON.stringify(chatboxData));
+   
+   // Navigate to chatbox
+   window.open("/chat-box", "_blank");
+ };
+
+ // Transform our scenario data to chatbox format
+ const transformTochatboxFormat = (scenarioData: any) => {
+   const characters = scenarioData.key_figures?.map((figure: any) => ({
+     name: figure.name,
+     role: figure.role,
+     personality_profile: {
+       strengths: [],
+       motivations: figure.primary_goals || [],
+       leadership_style: figure.background || "",
+       key_quote: `As ${figure.role}, I focus on achieving our objectives.`,
+       decision_making_approach: "Strategic and analytical",
+       risk_tolerance: "Medium",
+       communication_style: "Professional and direct",
+       background: figure.background || "",
+       correlation: figure.correlation || ""
+     }
+   })) || [];
+
+   const phases = scenarioData.scenes?.map((scene: any, index: number) => ({
+     phase: index + 1,
+     title: scene.title,
+     duration: `${scene.estimated_duration || 30} minutes`,
+     goal: scene.user_goal || "Complete the phase objectives",
+     activities: [scene.description || "Analyze the situation and make decisions"],
+     deliverables: [
+       "Analysis summary",
+       "Strategic recommendations",
+       "Decision rationale"
+     ]
+   })) || [
+     {
+       phase: 1,
+       title: "Initial Analysis",
+       duration: "30 minutes",
+       goal: "Analyze the business situation and identify key challenges",
+       activities: ["Review case study materials", "Identify stakeholders", "Assess current situation"],
+       deliverables: ["Situation analysis", "Stakeholder map", "Problem identification"]
+     }
+   ];
+
+   return {
+     case_study: {
+       title: scenarioData.title,
+       description: scenarioData.description,
+       industry: "Business",
+       primary_challenge: "Strategic decision making",
+       learning_outcomes: (scenarioData.learning_outcomes || []).map((outcome: string) => ({
+         outcome: outcome.replace(/^\d+\.\s*/, ''), // Remove numbering
+         description: `Students will ${outcome.toLowerCase()}`
+       })),
+       characters: characters,
+       simulation_timeline: {
+         total_duration: `${phases.length * 30} minutes`,
+         phases: phases
+       },
+       teaching_notes: {
+         preparation_required: "Students should review the case study materials thoroughly",
+         key_concepts: [
+           "Strategic analysis",
+           "Decision making", 
+           "Business problem solving"
+         ]
+       }
+     }
+   };
+ };
+
+ // Placeholder handlers for personas and timeline
+ const handleAddPersona = () => {
+   const newPersona = {
+     id: `temp-persona-${Date.now()}`,
+     name: "New Persona",
+     position: "",
+     description: "",
+     traits: {
+       assertiveness: 3,
+       cooperativeness: 3,
+       openness: 3,
+       risk_tolerance: 3,
+       emotional_stability: 3
+     },
+     defaultTraits: {
+       assertiveness: 3,
+       cooperativeness: 3,
+       openness: 3,
+       risk_tolerance: 3,
+       emotional_stability: 3
+     },
+     primaryGoals: "",
+     isTemp: true // Mark as temporary
+   };
+   
+   // Add to temporary personas at the top
+   setTempPersonas(tempPersonas => [newPersona, ...tempPersonas]);
+   setEditingIdx(0); // Open the new persona for editing (it's at index 0 now)
+ }
+ const handleAddScene = () => {
+   const newScene = {
+     id: `scene-${Date.now()}`,
+     title: "New Scene",
+     description: "",
+     personas_involved: [],
+     user_goal: "",
+     sequence_order: scenes.length + 1,
+     image_url: "",
+     timeout_turns: 15
+   };
+   setScenes(scenes => [...scenes, newScene]);
+   setEditingSceneIdx(scenes.length); // Open the new scene for editing
+ }
+
+
+ // Handler to clear the uploaded file and open the file picker
+ const handleChooseDifferentFile = (e: React.MouseEvent) => {
+   e.preventDefault();
+   setUploadedFile(null);
+   if (fileInputRef.current) fileInputRef.current.value = "";
+ }
+
+
+ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+   const file = e.target.files?.[0]
+   if (file) setUploadedFile(file)
+ }
+
+
+ const handleDragOver = (e: React.DragEvent) => {
+   e.preventDefault()
+   setIsDragOver(true)
+ }
+
+
+ const handleDragLeave = (e: React.DragEvent) => {
+   e.preventDefault()
+   setIsDragOver(false)
+ }
+
+
+ const handleDrop = (e: React.DragEvent) => {
+   e.preventDefault()
+   setIsDragOver(false)
   
-  const [scenarioTitle, setScenarioTitle] = useState("")
-  const [scenarioDescription, setScenarioDescription] = useState("")
-  const [scenarioIndustry, setScenarioIndustry] = useState("")
-  const [scenarioChallenge, setScenarioChallenge] = useState("")
-  const [learningObjectives, setLearningObjectives] = useState<string[]>([])
-  const [newObjective, setNewObjective] = useState("")
+   const files = Array.from(e.dataTransfer.files)
+   const pdfFile = files.find(file => file.type === "application/pdf")
   
-  // Task management state
-  const [scenarioTasks, setScenarioTasks] = useState<Array<{
-    id: string;
-    title: string;
-    description: string;
-    expected_output: string;
-    assigned_agent_role?: string;
-    execution_order: number;
-    depends_on_tasks: string[];
-    category?: string;
-    tools: string[];
-  }>>([])
-  const [taskTitle, setTaskTitle] = useState("")
-  const [taskDescription, setTaskDescription] = useState("")
-  const [taskExpectedOutput, setTaskExpectedOutput] = useState("")
-  const [taskAgentRole, setTaskAgentRole] = useState("")
-  const [taskCategory, setTaskCategory] = useState("")
-  const [taskTools, setTaskTools] = useState<string[]>([])
-  const [taskDependencies, setTaskDependencies] = useState<string[]>([])
+   if (pdfFile) {
+     setUploadedFile(pdfFile)
+     // Clear the file input value to ensure it updates
+     if (fileInputRef.current) {
+       fileInputRef.current.value = ""
+     }
+   } else {
+     alert("Please drop a PDF file")
+   }
+ }
+
+
+ // Handler for "Upload Files" button
+ const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+   if (e.target.files) {
+     const filesArray = Array.from(e.target.files);
+     setUploadedFiles(filesArray);
+     console.log("[DEBUG] Context files selected:", filesArray.map(f => f.name));
+   }
+ };
+ const handleUploadFilesClick = () => {
+   filesInputRef.current?.click();
+ };
+
+
+ // Handler to remove a file from uploadedFiles
+ const handleRemoveFile = (idx: number) => {
+   setUploadedFiles(files => files.filter((_, i) => i !== idx));
+ };
+
+
+ const handleAutofill = async () => {
+   if (!uploadedFile) return;
+   setAutofillLoading(true);
+   setAutofillError(null);
+   setAutofillResult(null);
+   setAutofillStep("Processing PDF and context files...");
+   setAutofillProgress(25);
   
-  const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
-  const [selectedAgents, setSelectedAgents] = useState<Agent[]>([])
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-  const [aiSuggestions, setAiSuggestions] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
-
-  const industries = [
-    "Technology", "Finance", "Healthcare", "Education", "Manufacturing", 
-    "Retail", "E-commerce", "Real Estate", "Marketing", "Consulting"
-  ]
-
-  const taskCategories = [
-    "analysis", "research", "planning", "execution", "communication",
-    "data_processing", "content_creation", "decision_making", "monitoring"
-  ]
-
-  const agentRoles = [
-    "marketing", "finance", "product", "operations", "sales", 
-    "customer_service", "hr", "legal", "technical", "strategy"
-  ]
-
-  const availableTools = [
-    "web_search", "calculator", "email", "database_query", "file_reader",
-    "api_caller", "data_analysis", "report_generator", "social_media"
-  ]
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!user && !loading) {
-      router.push('/login')
-    }
-  }, [user, router, loading])
-
-  // Fetch available agents
-  useEffect(() => {
-    const fetchAgents = async () => {
-      if (!isAuthenticated) return
-      
-      try {
-        const agents = await apiClient.getAgents()
-        setAvailableAgents(agents)
-      } catch (err) {
-        console.error('Error fetching agents:', err)
-        setError('Failed to load agents')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (isAuthenticated) {
-      fetchAgents()
-    }
-  }, [isAuthenticated])
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file && file.type === "application/pdf") {
-      setUploadedFile(file)
-      // Simulate AI analysis
-      setTimeout(() => {
-        setAiSuggestions([
-          {
-            type: "scenario",
-            title: "E-commerce Customer Journey Optimization",
-            description: "Based on your PDF, this scenario focuses on improving customer experience across the purchase funnel.",
-            industry: "E-commerce",
-            challenge: "Optimizing customer conversion rates and reducing cart abandonment",
-            objectives: [
-              "Analyze customer behavior patterns",
-              "Identify conversion bottlenecks",
-              "Implement targeted improvements",
-              "Measure impact on key metrics"
-            ]
-          },
-          {
-            type: "agents",
-            suggestions: availableAgents.slice(0, 3).map(agent => ({
-              ...agent,
-              relevance: Math.floor(Math.random() * 20) + 80
-            }))
-          }
-        ])
-      }, 2000)
-    }
-  }
-
-  const addAgent = (agent: Agent) => {
-    if (!selectedAgents.find((a) => a.id === agent.id)) {
-      setSelectedAgents([...selectedAgents, agent])
-    }
-  }
-
-  const removeAgent = (agentId: number) => {
-    setSelectedAgents(selectedAgents.filter((a) => a.id !== agentId))
-  }
-
-  const addLearningObjective = () => {
-    if (newObjective.trim() && !learningObjectives.includes(newObjective.trim())) {
-      setLearningObjectives([...learningObjectives, newObjective.trim()])
-      setNewObjective("")
-    }
-  }
-
-  const removeLearningObjective = (index: number) => {
-    setLearningObjectives(learningObjectives.filter((_, i) => i !== index))
-  }
-
-  // Task management functions
-  const addTask = () => {
-    if (!taskTitle.trim() || !taskDescription.trim() || !taskExpectedOutput.trim()) {
-      setError('Please fill in all required task fields')
-      return
-    }
-
-    const newTask = {
-      id: Date.now().toString(),
-      title: taskTitle.trim(),
-      description: taskDescription.trim(),
-      expected_output: taskExpectedOutput.trim(),
-      assigned_agent_role: taskAgentRole || undefined,
-      execution_order: scenarioTasks.length + 1,
-      depends_on_tasks: taskDependencies,
-      category: taskCategory || undefined,
-      tools: taskTools
-    }
-
-    setScenarioTasks([...scenarioTasks, newTask])
+   try {
+     const formData = new FormData();
+     formData.append("file", uploadedFile);
+     
+     // Attach context files if any were uploaded via the bottom button
+     if (uploadedFiles.length > 0) {
+       uploadedFiles.forEach((file) => {
+         formData.append("context_files", file);
+       });
+     }
+     console.log("[DEBUG] handleAutofill: PDF file to upload:", uploadedFile.name);
+     console.log("[DEBUG] handleAutofill: Context files to upload:", uploadedFiles.map(f => f.name));
+     
+     setAutofillStep("Sending files to backend...");
+     setAutofillProgress(50);
+     
+     const response = await fetch(buildApiUrl("/api/parse-pdf/"), {
+       method: "POST",
+       body: formData,
+     });
     
-    // Clear task form
-    setTaskTitle("")
-    setTaskDescription("")
-    setTaskExpectedOutput("")
-    setTaskAgentRole("")
-    setTaskCategory("")
-    setTaskTools([])
-    setTaskDependencies([])
-    setError(null)
-  }
-
-  const removeTask = (taskId: string) => {
-    setScenarioTasks(scenarioTasks.filter(task => task.id !== taskId))
-    // Remove this task from dependencies of other tasks
-    setScenarioTasks(prevTasks => 
-      prevTasks.map(task => ({
-        ...task,
-        depends_on_tasks: task.depends_on_tasks.filter(depId => depId !== taskId)
-      }))
-    )
-  }
-
-  const toggleTaskTool = (toolId: string) => {
-    setTaskTools(prev => 
-      prev.includes(toolId) 
-        ? prev.filter(id => id !== toolId)
-        : [...prev, toolId]
-    )
-  }
-
-  const toggleTaskDependency = (taskId: string) => {
-    setTaskDependencies(prev => 
-      prev.includes(taskId) 
-        ? prev.filter(id => id !== taskId)
-        : [...prev, taskId]
-    )
-  }
-
-  const applySuggestion = (suggestion: any) => {
-    if (suggestion.type === "scenario") {
-      setScenarioTitle(suggestion.title)
-      setScenarioDescription(suggestion.description)
-      setScenarioIndustry(suggestion.industry)
-      setScenarioChallenge(suggestion.challenge)
-      setLearningObjectives(suggestion.objectives)
-    }
-  }
-
-  const saveScenario = async () => {
-    if (!isAuthenticated) return
+     if (!response.ok) {
+       throw new Error("Failed to process PDF");
+     }
     
-    if (!scenarioTitle.trim() || !scenarioDescription.trim() || !scenarioIndustry.trim() || !scenarioChallenge.trim()) {
-      setError('Please fill in all required fields')
-      return
-    }
-
-    if (learningObjectives.length === 0) {
-      setError('Please add at least one learning objective')
-      return
-    }
-
-    if (scenarioTasks.length === 0) {
-      setError('Please add at least one task to the scenario')
-      return
-    }
-
-    try {
-      setSaving(true)
-      setError(null)
-
-      const scenarioData = {
-        title: scenarioTitle.trim(),
-        description: scenarioDescription.trim(),
-        industry: scenarioIndustry,
-        challenge: scenarioChallenge.trim(),
-        learning_objectives: learningObjectives,
-        source_type: uploadedFile ? 'pdf' as const : 'manual' as const,
-        pdf_content: uploadedFile ? 'PDF content would be processed here' : undefined,
-        is_public: false,
-        is_template: false,
-        allow_remixes: true,
-      }
-
-      const newScenario = await apiClient.createScenario(scenarioData)
-      setSuccess('Scenario created successfully!')
-      
-      // Reset form
-      setTimeout(() => {
-        setScenarioTitle("")
-        setScenarioDescription("")
-        setScenarioIndustry("")
-        setScenarioChallenge("")
-        setLearningObjectives([])
-        setSelectedAgents([])
-        setUploadedFile(null)
-        setAiSuggestions([])
-        setSuccess(null)
-      }, 2000)
-      
-    } catch (err) {
-      console.error('Error creating scenario:', err)
-      setError('Failed to create scenario. Please try again.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const testScenario = async () => {
-    if (!scenarioTitle.trim()) {
-      setError('Please enter a scenario title first')
-      return
-    }
+     setAutofillStep("Processing with AI...");
+     setAutofillProgress(75);
+     
+     const resultData = await response.json();
+     console.log("Backend response:", resultData);
+     console.log("Response status:", resultData.status);
+     console.log("AI result exists:", !!resultData.ai_result);
+     console.log("Response keys:", Object.keys(resultData));
     
-    // For now, just navigate to simulation page
-    router.push('/simulation')
-  }
+     if (resultData.status === "completed" && resultData.ai_result) {
+       setAutofillStep("Complete!");
+       setAutofillProgress(100);
+       setAutofillResult(resultData);
+      
+       // Populate form fields with AI results
+       const aiData = resultData.ai_result;
+       console.log("AI Result:", aiData);
+       console.log("AI Result keys:", Object.keys(aiData));
+      
+       // Set the title
+       if (aiData.title) {
+         console.log("Setting title:", aiData.title);
+         setName(aiData.title);
+       } else {
+         console.log("No title found in AI result");
+       }
+      
+       // Set the description
+       if (aiData.description) {
+         console.log("Setting description:", aiData.description);
+         const formattedDescription = formatDescription(aiData.description);
+         console.log("Formatted description:", formattedDescription);
+         setDescription(formattedDescription);
+       } else {
+         console.log("No description found in AI result");
+         console.log("Description field value:", aiData.description);
+       }
+      
+       // Set the learning outcomes
+       if (aiData.learning_outcomes && Array.isArray(aiData.learning_outcomes)) {
+         console.log("Setting learning outcomes:", aiData.learning_outcomes);
+         setLearningOutcomes(aiData.learning_outcomes.join('\n'));
+       } else {
+         console.log("No learning outcomes found in AI result");
+       }
+       
+       // Create personas from key figures (excluding the student role)
+       console.log("[DEBUG] Checking for key_figures in aiData:", aiData.key_figures);
+       if (aiData.key_figures && Array.isArray(aiData.key_figures)) {
+         console.log("=== KEY FIGURES DEBUG ===");
+         console.log("Total key figures identified:", aiData.key_figures.length);
+         console.log("All key figures:", aiData.key_figures);
+         console.log("Student role:", aiData.student_role);
+         
+         console.log("=== FILTERING PROCESS ===");
+         
+         // Only exclude the actual main character (student role), not everyone mentioned in the description
+         const studentRole = aiData.student_role?.toLowerCase() || '';
+         
+         console.log(`[DEBUG] Student role: "${studentRole}"`);
+         
+         const filteredFigures = aiData.key_figures.filter((figure: any) => {
+           const figureName = figure.name?.toLowerCase() || '';
+           const figureRole = figure.role?.toLowerCase() || '';
+           
+           console.log(`[DEBUG] Checking figure: "${figure.name}" (role: "${figure.role}")`);
+           
+           // Check 1: Skip if this figure matches the student role exactly
+           if (studentRole && (figureName.includes(studentRole) || figureRole.includes(studentRole))) {
+             console.log(`[DEBUG] ❌ EXCLUDING ${figure.name} - matches student role: "${studentRole}"`);
+             return false;
+           }
+           
+           // Check 2: Skip if this figure has a role that suggests they're the main protagonist
+           // Only exclude if they're clearly the main character, not just mentioned in the description
+           const protagonistRoles = ['protagonist', 'main character', 'lead', 'principal', 'central figure'];
+           if (protagonistRoles.some(role => figureRole.includes(role))) {
+             console.log(`[DEBUG] ❌ EXCLUDING ${figure.name} - has protagonist role: "${figureRole}"`);
+             return false;
+           }
+           
+           console.log(`[DEBUG] ✅ KEEPING ${figure.name}`);
+           return true;
+         });
+         
+         console.log(`[DEBUG] After filtering: ${filteredFigures.length} figures remain out of ${aiData.key_figures.length} total`);
+         
+         const newPersonas = filteredFigures
+           .map((figure: any, index: number) => {
+             console.log(`[DEBUG] Processing key figure ${index + 1}:`, figure);
+             console.log(`[DEBUG] Personality traits for ${figure.name}:`, figure.personality_traits);
+             console.log(`[DEBUG] Primary goals for ${figure.name}:`, figure.primary_goals);
+             
+             // Format goals properly
+             let formattedGoals = 'Goals not specified in the case study.';
+             if (Array.isArray(figure.primary_goals) && figure.primary_goals.length > 0) {
+               formattedGoals = figure.primary_goals.map((goal: string) => `• ${goal}`).join('\n');
+             } else if (typeof figure.primary_goals === 'string' && figure.primary_goals.trim()) {
+               // If it's a string, try to split by common separators and bullet them
+               const goals = figure.primary_goals.split(/[;\n]/).map((goal: string) => goal.trim()).filter((goal: string) => goal.length > 0);
+               if (goals.length > 1) {
+                 formattedGoals = goals.map((goal: string) => `• ${goal}`).join('\n');
+               } else {
+                 formattedGoals = `• ${figure.primary_goals}`;
+               }
+             }
+             
+             console.log(`[DEBUG] Formatted goals for ${figure.name}:`, formattedGoals);
+             
+             return {
+               id: `persona-${Date.now()}-${index}`,
+               name: figure.name || `Person ${index + 1}`,
+               position: figure.role || 'Unknown',
+               description: formatDescription(figure.background || figure.correlation || 'No background information available.'),
+               primaryGoals: formattedGoals,
+               traits: {
+                 assertiveness: Math.max(1, Math.min(5, Math.round((figure.personality_traits?.assertive || 5) / 2))),
+                 cooperativeness: Math.max(1, Math.min(5, Math.round((figure.personality_traits?.collaborative || 5) / 2))),
+                 openness: Math.max(1, Math.min(5, Math.round((figure.personality_traits?.creative || 5) / 2))),
+                 risk_tolerance: Math.max(1, Math.min(5, Math.round((figure.personality_traits?.analytical || 5) / 2))),
+                 emotional_stability: Math.max(1, Math.min(5, Math.round((figure.personality_traits?.detail_oriented || 5) / 2)))
+               }
+             };
+           });
+         
+         console.log("=== FINAL PERSONAS ===");
+         console.log(`Total personas created: ${newPersonas.length}`);
+         newPersonas.forEach((persona: any, index: number) => {
+           console.log(`Persona ${index + 1}: ${persona.name} (${persona.position})`);
+           console.log(`  Goals: ${persona.primaryGoals}`);
+           console.log(`  Personality:`, persona.traits);
+         });
+         setPersonas(newPersonas);
+       } else {
+         console.log("[DEBUG] No key_figures found in aiData, creating empty personas array");
+         setPersonas([]);
+       }
+       
+       // Process scenes from AI results
+       console.log("[DEBUG] Checking for scenes in aiData:", aiData.scenes);
+       if (aiData.scenes && Array.isArray(aiData.scenes)) {
+         console.log("=== SCENES DEBUG ===");
+         console.log("Total scenes identified:", aiData.scenes.length);
+         console.log("All scenes:", aiData.scenes);
+         
+         const processedScenes = aiData.scenes
+           .sort((a: any, b: any) => (a.sequence_order || 0) - (b.sequence_order || 0)) // Sort by sequence order
+           .map((scene: any, index: number) => {
+             console.log(`[DEBUG] Processing scene ${index + 1}:`, scene);
+             return {
+               id: `scene-${Date.now()}-${index}`,
+               title: scene.title || `Scene ${index + 1}`,
+               description: scene.description || '',
+               personas_involved: scene.personas_involved || [],
+               user_goal: scene.user_goal || '',
+               sequence_order: scene.sequence_order || index + 1,
+               image_url: scene.image_url || '',
+               successMetric: scene.successMetric || '',
+               timeout_turns: scene.timeout_turns !== undefined && scene.timeout_turns !== null ? scene.timeout_turns : 15
+             };
+           });
+         
+         console.log("=== FINAL SCENES ===");
+         console.log(`Total scenes created: ${processedScenes.length}`);
+         processedScenes.forEach((scene: any, index: number) => {
+           console.log(`Scene ${index + 1}: ${scene.title}`);
+           console.log(`  Goal: ${scene.user_goal}`);
+           console.log(`  Personas: ${scene.personas_involved.join(', ')}`);
+           console.log(`  Image: ${scene.image_url ? 'Generated' : 'None'}`);
+         });
+         setScenes(processedScenes);
+         console.log("Processed scenes:", processedScenes.map((s: any) => ({ title: s.title, personas_involved: s.personas_involved })));
+       } else {
+         console.log("[DEBUG] No scenes found in aiData, creating empty scenes array");
+         setScenes([]);
+       }
+      
+     } else {
+       console.log("No AI result found in response:", resultData);
+       console.log("Full result data:", resultData);
+       throw new Error("No AI result received from backend");
+     }
+    
+   } catch (err: any) {
+     console.error("Autofill error details:", err);
+     console.error("Error stack:", err.stack);
+     setAutofillError(err.message || "Unknown error occurred during autofill");
+   } finally {
+     setAutofillLoading(false);
+     setAutofillStep("");
+     setAutofillProgress(0);
+   }
+ };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Loading scenario builder...</p>
-        </div>
-      </div>
-    )
-  }
 
-  if (!user) {
-    return null // Will redirect to login
-  }
+ // Utility to normalize scenes
+ function normalizeScenes(scenes: any[]) {
+   return scenes.map(scene => ({
+     ...scene,
+     timeout_turns:
+       scene.timeout_turns !== undefined && scene.timeout_turns !== null
+         ? scene.timeout_turns
+         : 15,
+   }));
+ }
 
-  return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="border-b border-yellow-500/20 bg-black/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/dashboard">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Link>
-            </Button>
-            <div className="flex items-center space-x-2">
-              <FileText className="h-6 w-6 text-yellow-500" />
-              <span className="text-xl font-bold">Scenario Builder</span>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={testScenario}
-              className="border-yellow-500/30 text-yellow-500 bg-transparent"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              Test Scenario
-            </Button>
-            <Button 
-              size="sm" 
-              onClick={saveScenario}
-              disabled={saving}
-              className="bg-yellow-500 text-black hover:bg-yellow-400"
-            >
-              {saving ? (
-                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
-              ) : (
-                <Save className="h-4 w-4 mr-2" />
-              )}
-              {saving ? 'Saving...' : 'Save Scenario'}
-            </Button>
-          </div>
-        </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Create Test Scenario</h1>
-            <p className="text-gray-400">Design scenarios to test your AI agents in realistic environments</p>
-          </div>
+ // Helper to extract likely player name from the title
+ function extractPlayerName(title: string) {
+   if (!title) return "";
+   // e.g., "Greg James at Sun Microsystems" => "Greg James"
+   const match = title.match(/^([^,\-@]+?)(?:\s+at|\s+in|,|\-|$)/i);
+   return match ? match[1].trim() : title.trim();
+ }
 
-          {error && (
-            <Card className="mb-6 bg-red-500/10 border-red-500/30">
-              <CardContent className="pt-6">
-                <div className="flex items-center space-x-2 text-red-400">
-                  <AlertCircle className="h-5 w-5" />
-                  <p>{error}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
-          {success && (
-            <Card className="mb-6 bg-green-500/10 border-green-500/30">
-              <CardContent className="pt-6">
-                <div className="flex items-center space-x-2 text-green-400">
-                  <CheckCircle className="h-5 w-5" />
-                  <p>{success}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+ // Helper to normalize names for comparison
+ function normalizeName(name: string) {
+   return name ? name.replace(/[^a-zA-Z ]/g, "").toLowerCase().trim() : "";
+ }
 
-          <Tabs defaultValue="source" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 bg-gray-900">
-              <TabsTrigger value="source" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black">
-                Scenario Source
-              </TabsTrigger>
-              <TabsTrigger value="details" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black">
-                Scenario Details
-              </TabsTrigger>
-              <TabsTrigger value="tasks" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black">
-                Define Tasks
-              </TabsTrigger>
-              <TabsTrigger value="agents" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black">
-                Suggested Agents
-              </TabsTrigger>
-              <TabsTrigger value="review" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black">
-                Review & Save
-              </TabsTrigger>
-            </TabsList>
 
-            <TabsContent value="source" className="space-y-6">
-              <div className="grid lg:grid-cols-2 gap-8">
-                {/* Manual Creation */}
-                <Card className="bg-black border-yellow-500/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <FileText className="h-5 w-5 mr-2 text-yellow-500" />
-                      Create Manually
-                    </CardTitle>
-                    <CardDescription>Build your scenario from scratch with full control</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="scenario-title">Scenario Title</Label>
-                      <Input
-                        id="scenario-title"
-                        placeholder="e.g., Customer Onboarding Flow"
-                        value={scenarioTitle}
-                        onChange={(e) => setScenarioTitle(e.target.value)}
-                        className="bg-gray-900 border-gray-700 focus:border-yellow-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="scenario-description">Description</Label>
-                      <Textarea
-                        id="scenario-description"
-                        placeholder="Describe what this scenario tests..."
-                        value={scenarioDescription}
-                        onChange={(e) => setScenarioDescription(e.target.value)}
-                        className="bg-gray-900 border-gray-700 focus:border-yellow-500 min-h-[120px]"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+ function isLikelySamePerson(playerName: string, personaName: string) {
+   const nPlayer = normalizeName(playerName);
+   const nPersona = normalizeName(personaName);
+   if (!nPlayer || !nPersona) return false;
+   if (nPlayer === nPersona) return true;
+   // Split into words and check for overlap
+   const playerWords = nPlayer.split(" ").filter(Boolean);
+   const personaWords = nPersona.split(" ").filter(Boolean);
+   const overlap = playerWords.filter(word => personaWords.includes(word));
+   return overlap.length >= 2; // At least first and last name match
+ }
 
-                {/* PDF Upload */}
-                <Card className="bg-black border-blue-500/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Upload className="h-5 w-5 mr-2 text-blue-400" />
-                      Upload Business Case
-                    </CardTitle>
-                    <CardDescription>Let AI analyze your PDF and suggest optimal scenarios</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center hover:border-blue-400/50 transition-colors">
-                      <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                      <p className="text-gray-400 mb-4">Drop your PDF here or click to browse</p>
-                      <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" id="pdf-upload" />
-                      <Button variant="outline" className="border-blue-400/30 text-blue-400 bg-transparent" asChild>
-                        <label htmlFor="pdf-upload" className="cursor-pointer">
-                          Choose File
-                        </label>
-                      </Button>
-                    </div>
 
-                    {uploadedFile && (
-                      <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-blue-400">File Uploaded</span>
-                          <Wand2 className="h-4 w-4 text-blue-400 animate-spin" />
-                        </div>
-                        <p className="text-sm text-gray-400">{uploadedFile.name}</p>
-                        <p className="text-sm text-blue-400 mt-2">AI is analyzing your document...</p>
-                      </div>
-                    )}
+ // Helper to format description with proper paragraphs
+ function formatDescription(text: string): string {
+   if (!text) return '';
+   
+   // Split by common paragraph separators
+   let paragraphs = text.split(/\n\s*\n/);
+   
+   // If no double line breaks, try splitting by single line breaks
+   if (paragraphs.length <= 1) {
+     paragraphs = text.split(/\n/);
+   }
+   
+   // If still only one paragraph, try to break it up by sentences
+   if (paragraphs.length <= 1) {
+     const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+     if (sentences.length > 2) {
+       // Group sentences into paragraphs (2-3 sentences per paragraph)
+       const groupedParagraphs = [];
+       for (let i = 0; i < sentences.length; i += 2) {
+         const paragraph = sentences.slice(i, i + 2).join(' ').trim();
+         if (paragraph) groupedParagraphs.push(paragraph);
+       }
+       paragraphs = groupedParagraphs;
+     }
+   }
+   
+   // Clean up each paragraph
+   paragraphs = paragraphs
+     .map(p => p.trim())
+     .filter(p => p.length > 0)
+     .map(p => {
+       // Remove excessive whitespace
+       p = p.replace(/\s+/g, ' ');
+       // Ensure proper sentence endings
+       if (!p.endsWith('.') && !p.endsWith('!') && !p.endsWith('?')) {
+         p += '.';
+       }
+       return p;
+     });
+   
+   // Join with double line breaks for proper paragraph separation
+   return paragraphs.join('\n\n');
+ }
 
-                    {aiSuggestions.length > 0 && (
-                      <div className="space-y-4">
-                        <h4 className="font-medium text-blue-400">AI Suggestions</h4>
-                        {aiSuggestions.map((suggestion, index) => (
-                          <div key={index} className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                            {suggestion.type === "scenario" && (
-                              <div>
-                                <h5 className="font-medium mb-2">{suggestion.title}</h5>
-                                <p className="text-sm text-gray-400 mb-3">{suggestion.description}</p>
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => applySuggestion(suggestion)}
-                                  className="bg-blue-500 text-white hover:bg-blue-400"
-                                >
-                                  Use This Scenario
-                                </Button>
-                              </div>
-                            )}
-                            {suggestion.type === "agents" && (
-                              <div>
-                                <h5 className="font-medium mb-2">Recommended Agents</h5>
-                                <div className="space-y-2">
-                                  {suggestion.suggestions.map((agent: any) => (
-                                    <div
-                                      key={agent.id}
-                                      className="flex items-center justify-between p-2 bg-gray-900/50 rounded"
-                                    >
-                                      <span className="text-sm">{agent.name}</span>
-                                      <div className="flex items-center space-x-2">
-                                        <Badge variant="outline" className="border-blue-400/30 text-blue-400 text-xs">
-                                          {agent.relevance}% match
-                                        </Badge>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => addAgent(agent)}
-                                        >
-                                          <Plus className="h-3 w-3" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+ // Helper to extract likely player names from the title and description
+ function extractPlayerNames(title: string, description: string) {
+   const names: string[] = [];
+   // Extract all 'Firstname Lastname' patterns from the entire description
+   if (description) {
+     const nameMatches = [...description.matchAll(/([A-Z][a-z]+ [A-Z][a-z]+)/g)];
+     for (const match of nameMatches) {
+       const name = match[1].trim();
+       if (!names.includes(name)) names.push(name);
+     }
+   }
+   // Fallback: try to extract from the title
+   if (title) {
+     const match = title.match(/([A-Z][a-z]+ [A-Z][a-z]+)/);
+     if (match && !names.includes(match[1].trim())) names.push(match[1].trim());
+   }
+   return names;
+ }
 
-            <TabsContent value="details" className="space-y-6">
-              <Card className="bg-black border-yellow-500/20">
-                <CardHeader>
-                  <CardTitle>Scenario Details</CardTitle>
-                  <CardDescription>Define the business context and learning objectives</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="industry">Industry</Label>
-                      <Select value={scenarioIndustry} onValueChange={setScenarioIndustry}>
-                        <SelectTrigger className="bg-gray-900 border-gray-700 focus:border-yellow-500">
-                          <SelectValue placeholder="Select industry" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-gray-900 border-gray-700">
-                          {industries.map((industry) => (
-                            <SelectItem key={industry} value={industry}>
-                              {industry}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="challenge">Business Challenge</Label>
-                      <Input
-                        id="challenge"
-                        placeholder="e.g., Reduce customer churn by 20%"
-                        value={scenarioChallenge}
-                        onChange={(e) => setScenarioChallenge(e.target.value)}
-                        className="bg-gray-900 border-gray-700 focus:border-yellow-500"
-                      />
-                    </div>
-                  </div>
+ // Helper to extract single names that might be the main character
+ function extractSingleNames(title: string, description: string) {
+   const names: string[] = [];
+   const text = `${title} ${description}`;
+   
+   // Look for capitalized single names (likely main characters)
+   const singleNameMatches = [...text.matchAll(/\b([A-Z][a-z]{2,})\b/g)];
+   for (const match of singleNameMatches) {
+     const name = match[1].trim();
+     // Filter out common words that aren't names
+     const commonWords = ['the', 'and', 'for', 'with', 'from', 'this', 'that', 'they', 'their', 'company', 'network', 'ltd', 'inc', 'corp'];
+     if (!commonWords.includes(name.toLowerCase()) && name.length > 2) {
+       if (!names.includes(name)) names.push(name);
+     }
+   }
+   
+   return names;
+ }
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label>Learning Objectives</Label>
-                      <div className="flex items-center space-x-2">
-                        <Input
-                          placeholder="Add learning objective..."
-                          value={newObjective}
-                          onChange={(e) => setNewObjective(e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && addLearningObjective()}
-                          className="bg-gray-900 border-gray-700 focus:border-yellow-500 w-64"
-                        />
-                        <Button 
-                          size="sm" 
-                          onClick={addLearningObjective}
-                          className="bg-yellow-500 text-black hover:bg-yellow-400"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {learningObjectives.length > 0 && (
-                      <div className="space-y-2">
-                        {learningObjectives.map((objective, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg">
-                            <span>{objective}</span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeLearningObjective(index)}
-                              className="text-red-400 hover:text-red-300"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
-            <TabsContent value="tasks" className="space-y-6">
-              <Card className="bg-black border-yellow-500/20">
-                <CardHeader>
-                  <CardTitle>Scenario Tasks</CardTitle>
-                  <CardDescription>
-                    Define the tasks that agents will collaborate on to complete this scenario
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Current Tasks */}
-                  {scenarioTasks.length > 0 && (
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-yellow-500">Current Tasks ({scenarioTasks.length})</h4>
-                      <div className="space-y-3">
-                        {scenarioTasks.map((task, index) => (
-                          <div key={task.id} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="flex items-center space-x-2">
-                                <Badge variant="outline" className="border-yellow-400/30 text-yellow-400">
-                                  #{index + 1}
-                                </Badge>
-                                <h5 className="font-medium">{task.title}</h5>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeTask(task.id)}
-                                className="text-red-400 hover:text-red-300"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <p className="text-sm text-gray-400 mb-2">{task.description}</p>
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {task.assigned_agent_role && (
-                                <Badge variant="outline" className="border-blue-400/30 text-blue-400">
-                                  Role: {task.assigned_agent_role}
-                                </Badge>
-                              )}
-                              {task.category && (
-                                <Badge variant="outline" className="border-purple-400/30 text-purple-400">
-                                  {task.category}
-                                </Badge>
-                              )}
-                              {task.tools.map((tool) => (
-                                <Badge key={tool} variant="outline" className="border-green-400/30 text-green-400">
-                                  {tool}
-                                </Badge>
-                              ))}
-                            </div>
-                            <p className="text-xs text-gray-500">Expected: {task.expected_output}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+ function isLikelySamePersonFuzzy(playerNames: string[], personaName: string) {
+   const nPersona = normalizeName(personaName);
+   return playerNames.some(playerName => {
+     const nPlayer = normalizeName(playerName);
+     const playerWords = nPlayer.split(" ").filter(Boolean);
+     // Require all player words (e.g., first and last name) to be present in persona name
+     return playerWords.length > 1 && playerWords.every(word => nPersona.includes(word));
+   });
+ }
 
-                  {/* Add New Task */}
-                  <div className="border-t border-gray-700 pt-6">
-                    <h4 className="font-medium text-yellow-500 mb-4">Add New Task</h4>
-                    <div className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="task-title">Task Title *</Label>
-                          <Input
-                            id="task-title"
-                            placeholder="e.g., Market Analysis"
-                            value={taskTitle}
-                            onChange={(e) => setTaskTitle(e.target.value)}
-                            className="bg-gray-900 border-gray-700 focus:border-yellow-500"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="task-category">Category</Label>
-                          <Select value={taskCategory} onValueChange={setTaskCategory}>
-                            <SelectTrigger className="bg-gray-900 border-gray-700 focus:border-yellow-500">
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-gray-900 border-gray-700">
-                              {taskCategories.map((category) => (
-                                <SelectItem key={category} value={category}>
-                                  {category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="task-description">Task Description *</Label>
-                        <Textarea
-                          id="task-description"
-                          placeholder="Describe what this task involves..."
-                          value={taskDescription}
-                          onChange={(e) => setTaskDescription(e.target.value)}
-                          className="bg-gray-900 border-gray-700 focus:border-yellow-500 min-h-[100px]"
-                        />
-                      </div>
+ // When autofillResult changes, update personas state (only if it contains personas array)
+ useEffect(() => {
+   // Only run this if we have personas in the old format
+   if (
+     autofillResult &&
+     autofillResult.ai_result &&
+     Array.isArray(autofillResult.ai_result.personas) &&
+     autofillResult.ai_result.personas.length > 0 &&
+     !autofillResult.ai_result.key_figures // Only run if we don't have key_figures (old format)
+   ) {
+     console.log("[DEBUG] Found personas in autofillResult, applying legacy persona processing");
+     const playerNames = extractPlayerNames(name, description);
+     console.log("[DEBUG] Extracted player names:", playerNames);
+     const mainCharacter = playerNames[0]?.toLowerCase().trim();
+     autofillResult.ai_result.personas.forEach((persona: any) => {
+       console.log(`[DEBUG] Persona: '${persona.name}', Excluded: ${persona.name?.toLowerCase().trim() === mainCharacter}`);
+     });
+     const filtered = autofillResult.ai_result.personas.filter((persona: any) => {
+       return persona.name?.toLowerCase().trim() !== mainCharacter;
+     }).map((persona: any) => ({
+       ...persona,
+       traits: { ...persona.traits }, // editable traits
+       defaultTraits: { ...persona.traits } // original LLM traits
+     }));
+     setPersonas(filtered);
+   } else {
+     console.log("[DEBUG] No personas array in autofillResult or key_figures present, skipping legacy persona processing");
+   }
+ }, [autofillResult, name, description]);
 
-                      <div className="space-y-2">
-                        <Label htmlFor="task-expected">Expected Output *</Label>
-                        <Textarea
-                          id="task-expected"
-                          placeholder="What should this task produce?"
-                          value={taskExpectedOutput}
-                          onChange={(e) => setTaskExpectedOutput(e.target.value)}
-                          className="bg-gray-900 border-gray-700 focus:border-yellow-500 min-h-[80px]"
-                        />
-                      </div>
 
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Assigned Agent Role (Optional)</Label>
-                          <Select value={taskAgentRole} onValueChange={setTaskAgentRole}>
-                            <SelectTrigger className="bg-gray-900 border-gray-700 focus:border-yellow-500">
-                              <SelectValue placeholder="Any agent can handle" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-gray-900 border-gray-700">
-                              {agentRoles.map((role) => (
-                                <SelectItem key={role} value={role}>
-                                  {role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Task Dependencies</Label>
-                          <div className="text-sm text-gray-400 mb-2">
-                            Select tasks that must be completed before this one:
-                          </div>
-                          {scenarioTasks.length > 0 ? (
-                            <div className="space-y-2 max-h-32 overflow-y-auto">
-                              {scenarioTasks.map((task) => (
-                                <div key={task.id} className="flex items-center space-x-2">
-                                  <input
-                                    type="checkbox"
-                                    id={`dep-${task.id}`}
-                                    checked={taskDependencies.includes(task.id)}
-                                    onChange={() => toggleTaskDependency(task.id)}
-                                    className="rounded border-gray-600 bg-gray-800"
-                                  />
-                                  <label htmlFor={`dep-${task.id}`} className="text-sm text-gray-300">
-                                    {task.title}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-gray-500">No tasks created yet</p>
-                          )}
-                        </div>
-                      </div>
+ // Update persona traits handler
+ const handleTraitsChange = (idx: number, newTraits: any) => {
+   // Check if we're editing a temporary persona
+   if (editingIdx !== null && tempPersonas[editingIdx]?.isTemp) {
+     setTempPersonas(tempPersonas => tempPersonas.map((p, i) => i === idx ? { ...p, traits: { ...newTraits } } : p));
+   } else {
+     setPersonas(personas => personas.map((p, i) => i === idx ? { ...p, traits: { ...newTraits } } : p));
+   }
+ };
 
-                      <div className="space-y-2">
-                        <Label>Required Tools</Label>
-                        <div className="grid grid-cols-3 gap-2">
-                          {availableTools.map((tool) => (
-                            <div
-                              key={tool}
-                              className={`p-2 rounded border cursor-pointer text-sm transition-colors ${
-                                taskTools.includes(tool)
-                                  ? "border-yellow-500 bg-yellow-500/10 text-yellow-400"
-                                  : "border-gray-700 hover:border-gray-600 text-gray-300"
-                              }`}
-                              onClick={() => toggleTaskTool(tool)}
-                            >
-                              {tool.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
 
-                      <Button 
-                        onClick={addTask}
-                        className="bg-yellow-500 text-black hover:bg-yellow-400"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Task
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+ // Save persona edits handler
+ const handleSavePersona = (idx: number, updatedPersona: any) => {
+   if (updatedPersona.isTemp) {
+     // This is a temporary persona being saved for the first time
+     const { isTemp, ...personaToSave } = updatedPersona; // Remove isTemp flag
+     personaToSave.id = `persona-${Date.now()}-${idx}`; // Generate permanent ID
+     
+     // Remove from temp personas and add to permanent personas at the top
+     setTempPersonas(tempPersonas => tempPersonas.filter((_, i) => i !== idx));
+     setPersonas(personas => [personaToSave, ...personas]);
+   } else {
+     // This is an existing persona being updated
+     setPersonas(personas => personas.map((p, i) => i === idx ? { ...updatedPersona } : p));
+   }
+   setEditingIdx(null);
+ };
 
-            <TabsContent value="agents" className="space-y-6">
-              <div className="grid lg:grid-cols-2 gap-8">
-                {/* Available Agents */}
-                <Card className="bg-black border-yellow-500/20">
-                  <CardHeader>
-                    <CardTitle>Available Agents</CardTitle>
-                    <CardDescription>Select agents to participate in your scenario</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {availableAgents.map((agent) => (
-                        <div
-                          key={agent.id}
-                          className="flex items-center justify-between p-3 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <Bot className="h-6 w-6 text-blue-400" />
-                            <div>
-                              <h4 className="font-medium">{agent.name}</h4>
-                              <p className="text-sm text-gray-400">{agent.role}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant="outline" className="border-gray-600 text-gray-400 text-xs">
-                              {agent.category}
-                            </Badge>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => addAgent(agent)}
-                              disabled={selectedAgents.some((a) => a.id === agent.id)}
-                              className="border-yellow-500/30 text-yellow-500 hover:bg-yellow-500 hover:text-black disabled:opacity-50"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
 
-                {/* Selected Agents */}
-                <Card className="bg-black border-green-500/20">
-                  <CardHeader>
-                    <CardTitle>Selected Agents ({selectedAgents.length})</CardTitle>
-                    <CardDescription>Agents that will participate in your scenario</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {selectedAgents.length === 0 ? (
-                      <div className="text-center py-8 text-gray-400">
-                        <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No agents selected yet</p>
-                        <p className="text-sm">Choose agents from the left panel</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {selectedAgents.map((agent) => (
-                          <div
-                            key={agent.id}
-                            className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/20"
-                          >
-                            <div className="flex items-center space-x-3">
-                              <Bot className="h-6 w-6 text-green-400" />
-                              <div>
-                                <h4 className="font-medium">{agent.name}</h4>
-                                <p className="text-sm text-gray-400">{agent.role}</p>
-                              </div>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeAgent(agent.id)}
-                              className="text-red-400 hover:text-red-300"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+ // Delete persona handler
+ const handleDeletePersona = (idx: number) => {
+   // Check if we're editing a temporary persona
+   if (editingIdx !== null && tempPersonas[editingIdx]?.isTemp) {
+     // Delete from temporary personas
+     setTempPersonas(tempPersonas => tempPersonas.filter((_, i) => i !== idx));
+   } else {
+     // Delete from permanent personas
+     setPersonas(personas => personas.filter((_, i) => i !== idx));
+   }
+   setEditingIdx(null);
+ };
 
-            <TabsContent value="review" className="space-y-6">
-              <Card className="bg-black border-yellow-500/20">
-                <CardHeader>
-                  <CardTitle>Scenario Review</CardTitle>
-                  <CardDescription>Review your scenario configuration before saving</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="font-medium text-yellow-500 mb-1">Scenario Title</h4>
-                        <p>{scenarioTitle || "Untitled Scenario"}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-yellow-500 mb-1">Description</h4>
-                        <p className="text-sm text-gray-400">{scenarioDescription || "No description provided"}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-yellow-500 mb-1">Industry</h4>
-                        <p className="text-sm text-gray-400">{scenarioIndustry || "Not specified"}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-yellow-500 mb-1">Business Challenge</h4>
-                        <p className="text-sm text-gray-400">{scenarioChallenge || "Not specified"}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="font-medium text-yellow-500 mb-1">Learning Objectives ({learningObjectives.length})</h4>
-                        <div className="space-y-2">
-                          {learningObjectives.map((objective, index) => (
-                            <div key={index} className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                              <span className="text-sm">{objective}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-yellow-500 mb-1">Selected Agents ({selectedAgents.length})</h4>
-                        <div className="space-y-2">
-                          {selectedAgents.map((agent) => (
-                            <div key={agent.id} className="flex items-center space-x-2">
-                              <Bot className="h-4 w-4 text-blue-400" />
-                              <span className="text-sm">{agent.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">
-                    <Button 
-                      variant="outline" 
-                      onClick={testScenario}
-                      className="border-yellow-500/30 text-yellow-500 bg-transparent"
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Test Scenario
-                    </Button>
-                    <Button 
-                      onClick={saveScenario}
-                      disabled={saving}
-                      className="bg-yellow-500 text-black hover:bg-yellow-400"
-                    >
-                      {saving ? (
-                        <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
-                      ) : (
-                        <Save className="h-4 w-4 mr-2" />
-                      )}
-                      {saving ? 'Saving...' : 'Save Scenario'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </div>
-  )
+ // Scene management handlers
+ const handleSaveScene = (idx: number, updatedScene: any) => {
+   setScenes(scenes => scenes.map((s, i) => {
+     if (i === idx) {
+       // Merge the updated scene, preserving all new fields (like timeout_turns)
+       return { ...s, ...updatedScene };
+     }
+     return s;
+   }));
+   setEditingSceneIdx(null);
+ };
+
+ const handleDeleteScene = (idx: number) => {
+   setScenes(scenes => scenes.filter((_, i) => i !== idx));
+   setEditingSceneIdx(null);
+ };
+
+
+
+
+ return (
+   <div className="min-h-screen bg-background text-foreground flex flex-col items-center py-10 px-2">
+     {/* Left overlay sidebar */}
+     <div className="fixed top-0 left-0 h-full w-72 z-50 bg-black shadow-2xl flex flex-col items-start pl-8 pt-8">
+       <h1 className="mb-10 text-white text-xl font-bold mb-6">
+         Simulation Builder
+       </h1>
+       <Link href="/dashboard" className="mb-6">
+         <button className="bg-white text-black rounded px-4 py-2 font-medium shadow hover:bg-gray-200 transition">Back to Dashboard</button>
+             </Link>
+       {/* Add sidebar navigation or content here */}
+     </div>
+     {/* Add left padding to prevent content from being hidden under the sidebar */}
+     <div className="w-72 h-0" />
+     {/* Top overlay bar */}
+     <div className="fixed top-0 left-0 w-full z-40 bg-background shadow-lg flex items-center justify-between h-14 px-8">
+       <span className="text-lg font-semibold">Simulation Builder</span>
+       <div className="flex gap-4">
+         <button 
+           onClick={handleSave}
+           disabled={isSaving}
+           className={`rounded px-4 py-2 font-medium shadow transition flex items-center gap-2 ${
+             isSaved 
+               ? "bg-green-100 text-green-800 border border-green-300" 
+               : "bg-white text-black hover:bg-gray-200"
+           } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
+         >
+           {isSaving ? (
+             "Saving..."
+           ) : isSaved ? (
+             <>
+               <Check className="h-4 w-4" />
+               Saved
+             </>
+           ) : (
+             "Save"
+           )}
+         </button>
+         <button 
+           onClick={handlePublish}
+           disabled={isPublishing}
+           className={`rounded px-4 py-2 font-medium shadow transition flex items-center gap-2 ${
+             isPublished 
+               ? "bg-green-600 text-white" 
+               : "bg-black text-white hover:bg-gray-800"
+           } ${isPublishing ? "opacity-50 cursor-not-allowed" : ""}`}
+         >
+           {isPublishing ? (
+             "Publishing..."
+           ) : isPublished ? (
+             <>
+               <Check className="h-4 w-4" />
+               Published
+             </>
+           ) : (
+             "Publish"
+           )}
+         </button>
+         {autofillResult && (
+           <button 
+             onClick={handlePlayScenario}
+             className="bg-blue-600 text-white rounded px-4 py-2 font-medium shadow hover:bg-blue-700 transition flex items-center gap-2"
+           >
+             <Activity className="h-4 w-4" />
+             Play Scenario
+           </button>
+         )}
+       </div>
+     </div>
+     {/* Add top padding to prevent content from being hidden under the bar */}
+     <div className="h-14" />
+     {/* Main content shifted further right to avoid sidebar overlap */}
+     <div className="pl-[26rem] w-full">
+       {/* Header and Upload Row */}
+       <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 items-start">
+         {/* Left: Title and Subtitle */}
+         <div className="flex flex-col gap-2">
+           <h1 className="text-2xl font-bold">Upload your Business Case Study</h1>
+           <p className="text-muted-foreground text-sm">We will analyze the contents and autofill the configuration for you.</p>
+         </div>
+         {/* Right: Drag and Drop File Upload Box */}
+         <div
+           className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 flex flex-col items-center justify-center min-h-[120px] cursor-pointer ${
+             isDragOver
+               ? 'border-blue-500 bg-blue-50 scale-105'
+               : uploadedFile && uploadedFile.type === "application/pdf"
+               ? 'border-green-500 bg-green-50'
+               : 'border-gray-300 bg-card hover:border-gray-400'
+           }`}
+           onDragOver={handleDragOver}
+           onDragLeave={handleDragLeave}
+           onDrop={handleDrop}
+           onClick={() => fileInputRef.current?.click()}
+         >
+           {uploadedFile && uploadedFile.type === "application/pdf" ? (
+             <span className="flex flex-col items-center">
+               {/* Simple PDF icon using SVG */}
+               <svg className="h-10 w-10 mx-auto mb-2 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                 <path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6z" />
+                 <path d="M14 2v6h6" />
+               </svg>
+               <span className="text-xs text-red-500 font-semibold">PDF attached</span>
+             </span>
+           ) : (
+             <Upload className={`h-10 w-10 mx-auto mb-2 ${isDragOver ? 'text-blue-500' : 'text-muted-foreground'}`} />
+           )}
+          
+           {!(uploadedFile && uploadedFile.type === "application/pdf") && (
+             <span className={`font-medium ${isDragOver ? 'text-blue-600' : 'text-muted-foreground'}`}>
+               {isDragOver ? (
+                 <span>Drop your PDF here</span>
+               ) : (
+                 <span><span className="underline">Click here</span> to upload your PDF or drag and drop</span>
+               )}
+             </span>
+           )}
+          
+           <input
+             id="file-upload"
+             type="file"
+             accept=".pdf"
+             className="hidden"
+             onChange={handleFileChange}
+             ref={fileInputRef}
+           />
+          
+           {uploadedFile && (
+             <div className="mt-2 text-primary text-sm font-medium">{uploadedFile.name}</div>
+           )}
+         </div>
+         <div className="flex gap-2 justify-right">
+
+
+         </div>
+         {/* Buttons directly below the upload box, perfectly aligned */}
+         {uploadedFile && (
+           <div className="flex ml-25 gap-2 justify-right">
+             {/* Choose a different file */}
+             <label htmlFor="file-upload" className="cursor-pointer m-0">
+               <button
+                 type="button"
+                 onClick={handleChooseDifferentFile}
+                 className="bg-white text-black rounded px-4 py-2 font-medium shadow hover:bg-gray-200 transition border border-gray-300 w-full h-full align-middle"
+               >
+                 Choose a different file
+               </button>
+             </label>
+             {/* Use and autofill */}
+             <button
+               className="bg-black text-white rounded px-2 py-2 font-medium shadow hover:bg-gray-800 transition border border-black w-1000 h-10 align-middle flex items-center justify-center"
+               onClick={handleAutofill}
+               disabled={autofillLoading}
+             >
+               <Sparkles className="mr-2 h-4 w-4 text-white inline" />
+               Use and autofill
+             </button>
+           </div>
+         )}
+         {/* Show loading progress */}
+         {autofillLoading && (
+           <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+             <div className="flex items-center justify-between mb-2">
+               <span className="text-sm font-medium text-blue-800">{autofillStep}</span>
+               <span className="text-xs text-blue-600">{Math.round(autofillProgress)}%</span>
+             </div>
+             <Progress value={autofillProgress} className="w-full h-2" />
+           </div>
+         )}
+        
+         {/* Show error */}
+         {autofillError && (
+           <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+             <div className="flex items-center">
+               <span className="text-red-600 font-medium">Error:</span>
+               <span className="text-red-600 ml-2">{autofillError}</span>
+             </div>
+           </div>
+         )}
+        
+         {/* Show success message */}
+         {autofillResult && autofillStep === "Complete!" && (
+           <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+             <div className="flex items-center">
+               <span className="text-green-600 font-medium">✓ Success!</span>
+               <span className="text-green-600 ml-2">PDF content has been mapped to your form fields.</span>
+             </div>
+           </div>
+         )}
+       </div>
+
+
+       {/* Accordions */}
+       <div className="w-full max-w-4xl">
+         <Accordion type="multiple" className="space-y-6" defaultValue={['info', 'personas', 'timeline']}>
+           {/* Information Accordion */}
+           <AccordionItem value="info">
+             <AccordionTrigger className="flex items-center gap-2 text-lg font-semibold justify-start text-left">
+               <Info className="h-5 w-5" />
+               Information
+               <span className="ml-2 text-muted-foreground text-sm font-normal">The overall description of the simulation. This is the foundation and sense of direction.</span>
+             </AccordionTrigger>
+             <AccordionContent className="overflow-visible" style={{ overflow: 'visible' }}>
+               <div className="space-y-5 pt-4 w-full mx-auto overflow-visible">
+                 <div className="overflow-visible focus-within:overflow-visible">
+                   <Label htmlFor="name">Name</Label>
+                   <Input id="name" value={name} onChange={e => {
+                  setName(e.target.value);
+                  markAsUnsaved();
+                }} className="mt-1 w-full box-border p-2" />
+                 </div>
+                 <div className="overflow-visible focus-within:overflow-visible rounded-none">
+                   <Label htmlFor="description">Description/Background</Label>
+                   <Textarea
+                     id="description"
+                     value={description}
+                     onChange={e => {
+                       setDescription(e.target.value);
+                       markAsUnsaved();
+                     }}
+                     className="mt-1 w-full overflow-visible rounded-none z-10 p-2 min-h-[200px] resize-y"
+                     style={{ minHeight: '200px', maxHeight: '400px' }}
+                   />
+                 </div>
+                 <div className="overflow-visible focus-within:overflow-visible">
+                   <Label htmlFor="learning-outcomes">Learning Outcomes</Label>
+                   <Textarea
+                     id="learning-outcomes"
+                     value={learningOutcomes}
+                     onChange={e => {
+                       setLearningOutcomes(e.target.value);
+                       markAsUnsaved();
+                     }}
+                     className="mt-1 w-full box-border p-2 min-h-[200px] resize-y"
+                     style={{ minHeight: '200px', maxHeight: '400px' }}
+                   />
+                 </div>
+                           <div>
+                   <Label className="block mb-1">Files</Label>
+                   <span className="block text-muted-foreground text-xs mb-2">Use this to give more context to the simulation</span>
+                   <Button variant="outline" onClick={handleUploadFilesClick}>Upload Files</Button>
+                   <input
+                     type="file"
+                     multiple
+                     className="hidden"
+                     ref={filesInputRef}
+                     onChange={handleFilesChange}
+                   />
+                   {uploadedFiles.length > 0 && (
+                     <ul className="mt-2 text-xs text-muted-foreground">
+                       {uploadedFiles.map((file, idx) => (
+                         <li key={idx} className="flex items-center gap-2">
+                           {file.name}
+                           <button
+                             type="button"
+                             className="ml-1 text-red-500 hover:text-red-700"
+                             onClick={() => handleRemoveFile(idx)}
+                             aria-label={`Remove ${file.name}`}
+                           >
+                             <X className="w-3 h-3" />
+                           </button>
+                         </li>
+                       ))}
+                     </ul>
+                   )}
+                 </div>
+               </div>
+             </AccordionContent>
+           </AccordionItem>
+
+
+           {/* Personas Accordion */}
+           <AccordionItem value="personas">
+             <AccordionTrigger className="flex items-center gap-2 text-lg font-semibold justify-start text-left">
+               <Users className="h-5 w-5" />
+               Personas
+               <span className="ml-2 text-muted-foreground text-sm font-normal">The characters the user will interact during the simulation with their own personality and goals.</span>
+             </AccordionTrigger>
+             <AccordionContent>
+               <div className="flex flex-col items-center py-6">
+                 <Button onClick={handleAddPersona} variant="outline" className="w-60">Add new persona</Button>
+                 {/* Render persona cards here, excluding the player character */}
+                 {(tempPersonas.length > 0 || personas.length > 0) && (
+                   // Debug log to show which personas are being rendered
+                   console.log("[DEBUG] Temp personas to render:", tempPersonas.map(p => p.name)),
+                   console.log("[DEBUG] Permanent personas to render:", personas.map(p => p.name)),
+                   <div className="w-full flex flex-col items-center mt-6">
+                     {/* Render temporary personas first (at the top) */}
+                     {tempPersonas.map((persona: any, idx: number) => (
+                       <div key={`temp-${idx}`} className="relative w-full">
+                         <div onClick={() => setEditingIdx(idx)} style={{ cursor: 'pointer' }}>
+                           <PersonaCard
+                             persona={{ ...persona, traits: persona.traits }}
+                             defaultTraits={persona.defaultTraits}
+                             onTraitsChange={newTraits => handleTraitsChange(idx, newTraits)}
+                             onSave={updatedPersona => handleSavePersona(idx, updatedPersona)}
+                             onDelete={() => handleDeletePersona(idx)}
+                             editMode={false}
+                           />
+                         </div>
+                       </div>
+                     ))}
+                     {/* Render permanent personas */}
+                     {personas.map((persona: any, idx: number) => (
+                       <div key={`perm-${idx}`} className="relative w-full">
+                         <div onClick={() => setEditingIdx(idx)} style={{ cursor: 'pointer' }}>
+                           <PersonaCard
+                             persona={{ ...persona, traits: persona.traits }}
+                             defaultTraits={persona.defaultTraits}
+                             onTraitsChange={newTraits => handleTraitsChange(idx, newTraits)}
+                             onSave={updatedPersona => handleSavePersona(idx, updatedPersona)}
+                             onDelete={() => handleDeletePersona(idx)}
+                             editMode={false}
+                           />
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 )}
+               </div>
+             </AccordionContent>
+           </AccordionItem>
+
+
+           {/* Timeline Accordion */}
+           <AccordionItem value="timeline">
+             <AccordionTrigger className="flex items-center gap-2 text-lg font-semibold justify-start text-left">
+               <Activity className="h-5 w-5" />
+               Timeline
+               <span className="ml-2 text-muted-foreground text-sm font-normal">These are the sequence of events the user needs to solve for during the simulation.</span>
+             </AccordionTrigger>
+             <AccordionContent>
+               <div className="py-4">
+                 <p className="text-muted-foreground text-sm mb-6">Think of each segment as a self-contained mini-level in your simulation. Arrange them from top to bottom, this will be the sequence each scene will take place in.</p>
+                 <div className="flex flex-col items-center">
+                   <Button onClick={handleAddScene} variant="outline" className="w-60">Add new Scene</Button>
+                   
+                   {/* Render scene cards */}
+                   {scenes.length > 0 && (
+                     <div className="w-full flex flex-col items-center mt-6">
+                       {scenes
+                         .sort((a, b) => a.sequence_order - b.sequence_order)
+                         .map((scene: any, idx: number) => (
+                         <div key={scene.id} className="relative w-full">
+                           <div onClick={() => setEditingSceneIdx(idx)} style={{ cursor: 'pointer' }}>
+                             <SceneCard
+                               scene={scene}
+                               onSave={updatedScene => handleSaveScene(idx, updatedScene)}
+                               onDelete={() => handleDeleteScene(idx)}
+                               editMode={false}
+                               allPersonas={[...personas, ...tempPersonas]}
+                               studentRole={autofillResult?.student_role || ""}
+                             />
+                           </div>
+                         </div>
+                       ))}
+                     </div>
+                   )}
+                 </div>
+               </div>
+             </AccordionContent>
+           </AccordionItem>
+         </Accordion>
+       </div>
+     </div>
+     {/* Modal for editing persona */}
+     {editingIdx !== null && (
+       <PersonaModal isOpen={true} onClose={() => setEditingIdx(null)}>
+         <PersonaCard
+           persona={{ 
+             ...(editingIdx < tempPersonas.length ? tempPersonas[editingIdx] : personas[editingIdx - tempPersonas.length]), 
+             traits: (editingIdx < tempPersonas.length ? tempPersonas[editingIdx] : personas[editingIdx - tempPersonas.length]).traits 
+           }}
+           defaultTraits={(editingIdx < tempPersonas.length ? tempPersonas[editingIdx] : personas[editingIdx - tempPersonas.length]).defaultTraits}
+           onTraitsChange={newTraits => handleTraitsChange(editingIdx, newTraits)}
+           onSave={updatedPersona => handleSavePersona(editingIdx, updatedPersona)}
+           onDelete={() => handleDeletePersona(editingIdx)}
+           editMode={true}
+         />
+       </PersonaModal>
+     )}
+     
+     {/* Modal for editing scene */}
+     {editingSceneIdx !== null && (
+       <SceneModal isOpen={true} onClose={() => setEditingSceneIdx(null)}>
+         <SceneCard
+           scene={scenes[editingSceneIdx]}
+           onSave={updatedScene => handleSaveScene(editingSceneIdx, updatedScene)}
+           onDelete={() => handleDeleteScene(editingSceneIdx)}
+           editMode={true}
+           allPersonas={[...personas, ...tempPersonas]}
+           studentRole={autofillResult?.student_role || ""}
+         />
+       </SceneModal>
+     )}
+   </div>
+ )
 }

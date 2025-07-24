@@ -1,0 +1,244 @@
+{
+  "case_study": {
+    "title": "KasKazi Network Ltd – Distributing to the Bottom of the Pyramid (C)",
+    "case_id": "IMD-3-2018",
+    "version": "29.09.2011",
+    "institution": "IMD - International Institute for Management Development",
+    "location": "Lausanne, Switzerland",
+    "description": "This case examines the challenges faced by KasKazi Network, a successful distribution company serving bottom-of-the-pyramid markets in Kenya. The company struggles with the seasonal nature of manufacturer contracts, which creates demand fulfillment gaps and opportunities for counterfeit products. The case explores the strategic decision to develop own-brand products to achieve year-round operations and better serve customers.",
+    "industry": "Distribution and Retail",
+    "geographic_focus": "Kenya, East Africa",
+    "market_segment": "Bottom of the Pyramid (BoP)",
+    "primary_challenge": "Seasonal contract dependency and market continuity",
+    "learning_outcomes": [
+      {
+        "outcome": "Strategic Business Model Analysis",
+        "description": "Students will analyze the challenges of dependency on short-term client contracts and evaluate alternative business models for sustainable growth."
+      },
+      {
+        "outcome": "Bottom of the Pyramid Market Understanding",
+        "description": "Students will gain insights into the unique characteristics, opportunities, and challenges of serving low-income consumer markets in emerging economies."
+      },
+      {
+        "outcome": "Supply Chain and Distribution Strategy",
+        "description": "Students will examine distribution strategies for reaching underserved markets and the role of local knowledge in competitive advantage."
+      },
+      {
+        "outcome": "Brand Development and Market Entry",
+        "description": "Students will evaluate the strategic decision to develop own-brand products as a solution to market continuity challenges."
+      },
+      {
+        "outcome": "Competitive Intelligence and Market Protection",
+        "description": "Students will understand the challenges of counterfeit products in emerging markets and strategies for market protection."
+      },
+      {
+        "outcome": "Risk Management in Emerging Markets",
+        "description": "Students will assess various business risks including supply chain risks, market risks, and operational risks in developing economies."
+      }
+    ],
+    "characters": [
+      {
+        "name": "Wanjohi",
+        "role": "Founder/CEO of KasKazi Network",
+        "personality_profile": {
+          "strengths": [
+            "Deep market knowledge and intuition",
+            "Competitive intelligence capabilities",
+            "Deal-making and negotiation skills",
+            "Quick reaction to market changes",
+            "Entrepreneurial vision and adaptability"
+          ],
+          "motivations": [
+            "Building sustainable business relationships",
+            "Serving underserved markets effectively",
+            "Achieving year-round business operations",
+            "Creating market leadership position"
+          ],
+          "leadership_style": "Hands-on, market-focused, strategic thinker",
+          "key_quote": "My heroin is the chasing and closing of business deals, I know this market by heart, and can react to competitors instantly",
+          "decision_making_approach": "Data-driven with strong intuitive insights",
+          "risk_tolerance": "High - willing to take calculated risks for strategic advantage",
+          "communication_style": "Direct, confident, results-oriented"
+        }
+      },
+      {
+        "name": "Lisa Mwezi Schuepbach",
+        "role": "Research Associate",
+        "personality_profile": {
+          "strengths": [
+            "Analytical and research capabilities",
+            "Academic rigor in case documentation",
+            "Objective observation and analysis"
+          ],
+          "motivations": [
+            "Understanding business challenges in emerging markets",
+            "Contributing to management education",
+            "Documenting real-world business scenarios"
+          ],
+          "approach": "Academic researcher with practical business focus"
+        }
+      },
+      {
+        "name": "Professor Leif Sjoblom",
+        "role": "Academic Supervisor",
+        "personality_profile": {
+          "strengths": [
+            "Academic expertise in international business",
+            "Case study methodology",
+            "Strategic business analysis"
+          ],
+          "motivations": [
+            "Advancing management education",
+            "Bridging theory and practice",
+            "Developing future business leaders"
+          ],
+          "approach": "Academic with strong practical business understanding"
+        }
+      },
+      {
+        "name": "Mrs. Winifred Karugu",
+        "role": "Director, Jomo Kenyatta University of Agriculture and Technology (JKUAT)",
+        "personality_profile": {
+          "strengths": [
+            "Educational leadership",
+            "Local market understanding",
+            "Academic-industry collaboration"
+          ],
+          "motivations": [
+            "Advancing business education in Kenya",
+            "Supporting local business development",
+            "Knowledge transfer and capacity building"
+          ],
+          "approach": "Academic leader with strong community focus"
+        }
+      }
+    ],
+    "simulation_timeline": {
+      "total_duration": "180 minutes",
+      "phases": [
+        {
+          "phase": 1,
+          "title": "Market Analysis and Problem Identification",
+          "duration": "30 minutes",
+          "goal": "Complete a comprehensive stakeholder analysis and value chain mapping to identify key business challenges.",
+          "activities": [
+            "Teams analyze the current business model of KasKazi Network",
+            "Identify key stakeholders and their interests",
+            "Map the distribution value chain",
+            "Assess the impact of seasonal contracts on business sustainability"
+          ],
+          "deliverables": [
+            "Stakeholder analysis matrix",
+            "Value chain diagram",
+            "Problem statement summary"
+          ]
+        },
+        {
+          "phase": 2,
+          "title": "Strategic Challenge Deep Dive",
+          "duration": "45 minutes",
+          "goal": "Analyze root causes of seasonal contract issues and assess competitive landscape.",
+          "activities": [
+            "Analyze the root causes of the seasonal contract challenge",
+            "Evaluate the impact on end customers and market development",
+            "Assess the counterfeit product threat and market implications",
+            "Examine competitive advantages and market positioning"
+          ],
+          "deliverables": [
+            "Root cause analysis",
+            "Market impact assessment",
+            "Competitive analysis summary"
+          ]
+        },
+        {
+          "phase": 3,
+          "title": "Strategic Options Development",
+          "duration": "45 minutes",
+          "goal": "Develop strategic options and evaluate own-brand product opportunities.",
+          "activities": [
+            "Brainstorm alternative business models",
+            "Evaluate the own-brand product strategy",
+            "Assess market entry options for sanitary towels",
+            "Analyze risks and opportunities of each strategic option"
+          ],
+          "deliverables": [
+            "Strategic options matrix",
+            "Risk-opportunity assessment",
+            "Preliminary business case for own-brand strategy"
+          ]
+        },
+        {
+          "phase": 4,
+          "title": "Implementation Planning and Presentation",
+          "duration": "60 minutes",
+          "goal": "Create implementation roadmap with financial projections and risk mitigation.",
+          "activities": [
+            "Develop implementation roadmap for chosen strategy",
+            "Create financial projections and resource requirements",
+            "Prepare risk mitigation strategies",
+            "Present recommendations to the class"
+          ],
+          "deliverables": [
+            "Implementation roadmap",
+            "Financial projections",
+            "Risk mitigation plan",
+            "Executive presentation"
+          ]
+        }
+      ],
+      "key_decision_points": [
+        {
+          "timing": "End of Phase 1",
+          "decision": "Prioritize which business challenges to address first",
+          "stakeholders": ["Management team", "Key clients", "End customers"]
+        },
+        {
+          "timing": "End of Phase 2",
+          "decision": "Choose between maintaining status quo or pursuing new strategy",
+          "stakeholders": ["Wanjohi", "Investors", "Employees"]
+        },
+        {
+          "timing": "End of Phase 3",
+          "decision": "Select specific own-brand products and market entry strategy",
+          "stakeholders": ["Management team", "Supply chain partners", "Retailers"]
+        },
+        {
+          "timing": "End of Phase 4",
+          "decision": "Finalize implementation timeline and resource allocation",
+          "stakeholders": ["All stakeholders"]
+        }
+      ]
+    },
+    "teaching_notes": {
+      "preparation_required": "Students should read the case thoroughly and research bottom-of-the-pyramid market concepts",
+      "materials_needed": [
+        "Case study document",
+        "Financial calculators",
+        "Presentation materials",
+        "Flip charts and markers"
+      ],
+      "discussion_questions": [
+        "What are the key challenges facing KasKazi Network's current business model?",
+        "How does the seasonal nature of contracts affect different stakeholders?",
+        "What are the strategic implications of developing own-brand products?",
+        "How should KasKazi Network address the counterfeit product challenge?",
+        "What are the key success factors for serving bottom-of-the-pyramid markets?"
+      ],
+      "key_concepts": [
+        "Bottom of the Pyramid markets",
+        "Distribution strategy",
+        "Brand development",
+        "Market continuity",
+        "Competitive intelligence",
+        "Emerging market challenges"
+      ]
+    },
+    "assessment_criteria": {
+      "analysis_quality": "Depth of market and business model analysis",
+      "strategic_thinking": "Quality of strategic options and recommendations",
+      "feasibility": "Practicality and implementability of proposed solutions",
+      "presentation": "Clarity and persuasiveness of final presentation",
+      "teamwork": "Effectiveness of collaboration and participation"
+    }
+  }
+} 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The CrewAI Agent Builder Platform uses a PostgreSQL database with a comprehensive schema designed to support user management, agent creation, scenario management, and simulation execution with full marketplace and community features.
+The **AI Agent Education Platform** uses a PostgreSQL database with a comprehensive schema designed to support **PDF-to-simulation pipeline**, **linear simulation experiences**, and **ChatOrchestrator integration**. The schema is optimized for educational simulations where business case studies are transformed into immersive, multi-scene learning experiences with AI persona interactions.
 
 ## Database Architecture
 
@@ -15,12 +15,11 @@ erDiagram
         string full_name
         string username UK
         string password_hash
-        string bio
+        text bio
         string avatar_url
         string role
-        integer public_agents_count
-        integer public_tools_count
-        integer total_downloads
+        integer published_scenarios
+        integer total_simulations
         float reputation_score
         boolean profile_public
         boolean allow_contact
@@ -30,364 +29,197 @@ erDiagram
         timestamp updated_at
     }
 
-    %% Agent System
-    agents {
-        integer id PK
-        string name
-        string role
-        text goal
-        text backstory
-        jsonb tools
-        boolean verbose
-        boolean allow_delegation
-        boolean reasoning
-        string category
-        jsonb tags
-        boolean is_public
-        boolean is_template
-        boolean allow_remixes
-        string version
-        text version_notes
-        integer usage_count
-        integer clone_count
-        float average_rating
-        integer rating_count
-        integer created_by FK
-        integer remixed_from FK
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    %% Tool System
-    tools {
-        integer id PK
-        string name
-        text description
-        string tool_type
-        jsonb configuration
-        text code
-        string language
-        jsonb parameters
-        text usage_examples
-        jsonb tags
-        boolean is_public
-        boolean is_template
-        boolean allow_remixes
-        string version
-        text version_notes
-        integer usage_count
-        integer clone_count
-        float average_rating
-        integer rating_count
-        integer created_by FK
-        integer remixed_from FK
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    %% Task System
-    tasks {
-        integer id PK
-        string title
-        text description
-        text expected_output
-        jsonb context
-        jsonb output_format
-        integer agent_id FK
-        string category
-        jsonb tags
-        boolean is_public
-        boolean is_template
-        boolean allow_remixes
-        string version
-        text version_notes
-        integer usage_count
-        integer clone_count
-        float average_rating
-        integer rating_count
-        integer created_by FK
-        integer remixed_from FK
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    %% Scenario System
+    %% Scenario System (PDF-to-Simulation Pipeline)
     scenarios {
         integer id PK
         string title
         text description
-        string industry
         text challenge
+        string industry
         jsonb learning_objectives
         string source_type
         text pdf_content
+        string student_role
+        string category
+        string difficulty_level
+        integer estimated_duration
+        jsonb tags
+        string pdf_title
+        string pdf_source
+        string processing_version
+        float rating_avg
+        integer rating_count
         boolean is_public
         boolean is_template
         boolean allow_remixes
-        string version
-        text version_notes
         integer usage_count
         integer clone_count
-        float average_rating
-        integer rating_count
         integer created_by FK
-        integer remixed_from FK
         timestamp created_at
         timestamp updated_at
     }
 
-    %% CrewAI System
-    crew_configurations {
+    %% AI Persona System
+    scenario_personas {
         integer id PK
+        integer scenario_id FK
         string name
-        string crew_type
-        text description
-        integer scenario_id FK
-        string process_type
-        integer max_iterations
-        boolean verbose_logging
-        boolean allow_delegation
-        boolean memory_enabled
-        jsonb enabled_tools
-        jsonb custom_tools
+        string role
+        text background
+        text correlation
+        jsonb primary_goals
+        jsonb personality_traits
         timestamp created_at
         timestamp updated_at
     }
 
-    crew_members {
+    %% Scene Progression System
+    scenario_scenes {
         integer id PK
-        integer crew_configuration_id FK
-        integer agent_id FK
-        integer role_priority
-        boolean can_delegate
-        boolean is_manager
-        text backstory_override
-        text goal_override
-        timestamp created_at
-    }
-
-    crew_sessions {
-        integer id PK
-        integer crew_configuration_id FK
-        integer simulation_session_id FK
-        string session_type
-        string status
-        integer total_iterations
-        string current_agent_turn
-        jsonb crew_output
-        jsonb individual_contributions
-        jsonb collaboration_metrics
-        timestamp started_at
-        timestamp completed_at
-    }
-
-    crew_tasks {
-        integer id PK
-        integer crew_session_id FK
-        string task_name
+        integer scenario_id FK
+        string title
         text description
-        text expected_output
-        integer assigned_agent_id FK
-        jsonb depends_on_tasks
-        string status
-        text agent_output
-        integer execution_time_seconds
-        jsonb tools_used
-        timestamp created_at
-        timestamp completed_at
-    }
-
-    tool_registry {
-        integer id PK
-        string name UK
-        string display_name
-        text description
-        string category
-        string tool_class
-        string tool_module
-        jsonb configuration_schema
-        boolean is_enabled
-        boolean is_community_contributed
-        jsonb contributor_info
-        integer usage_count
-        timestamp last_used
+        text user_goal
+        integer scene_order
+        integer estimated_duration
+        integer max_attempts
+        float success_threshold
+        jsonb goal_criteria
+        jsonb hint_triggers
+        text scene_context
+        jsonb persona_instructions
+        string image_url
+        string image_prompt
         timestamp created_at
         timestamp updated_at
     }
 
-    %% Simulation System
-    simulations {
+    %% Scene-Persona Junction Table
+    scene_personas {
+        integer scene_id FK
+        integer persona_id FK
+        string involvement_level
+        timestamp created_at
+    }
+
+    %% File Processing System
+    scenario_files {
         integer id PK
         integer scenario_id FK
+        string file_path
+        integer file_size
+        string file_type
+        text original_content
+        text processed_content
+        string processing_status
+        jsonb processing_log
+        timestamp uploaded_at
+        timestamp processed_at
+    }
+
+    %% Linear Simulation System
+    user_progress {
+        integer id PK
         integer user_id FK
-        jsonb crew_configuration
-        string process_type
+        integer scenario_id FK
+        integer current_scene_id FK
+        string simulation_status
+        jsonb scenes_completed
+        integer total_attempts
+        integer hints_used
+        integer forced_progressions
+        jsonb orchestrator_data
+        float completion_percentage
+        integer total_time_spent
+        integer session_count
+        float final_score
+        timestamp started_at
+        timestamp completed_at
+        timestamp last_activity
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    %% Scene Progress Tracking
+    scene_progress {
+        integer id PK
+        integer user_progress_id FK
+        integer scene_id FK
         string status
-        text completion_summary
-        jsonb fallback_log
+        integer attempts
+        integer hints_used
+        boolean goal_achieved
+        boolean forced_progression
+        integer time_spent
+        integer messages_sent
+        integer ai_responses
+        float goal_achievement_score
+        float interaction_quality
+        text scene_feedback
         timestamp started_at
         timestamp completed_at
         timestamp created_at
         timestamp updated_at
     }
 
-    simulation_messages {
+    %% ChatOrchestrator Conversation System
+    conversation_logs {
         integer id PK
-        integer simulation_id FK
-        text user_message
-        text crew_response
-        timestamp created_at
+        integer user_progress_id FK
+        integer scene_id FK
+        string message_type
+        string sender_name
+        integer persona_id FK
+        text message_content
+        integer message_order
+        integer attempt_number
+        boolean is_hint
+        jsonb ai_context_used
+        string ai_model_version
+        float processing_time
+        string user_reaction
+        boolean led_to_progress
+        timestamp timestamp
     }
 
-    %% Junction Tables for Simulation Resource Tracking
-    simulation_agents {
+    %% Community Review System
+    scenario_reviews {
         integer id PK
-        integer simulation_id FK
-        integer agent_id FK
-        jsonb agent_snapshot
-        string status
-        timestamp created_at
-    }
-
-    simulation_tasks {
-        integer id PK
-        integer simulation_id FK
-        integer task_id FK
-        jsonb task_snapshot
-        string status
-        timestamp created_at
-    }
-
-    simulation_fallbacks {
-        integer id PK
-        integer simulation_id FK
-        string resource_type
-        integer original_resource_id
-        integer fallback_resource_id
-        string fallback_strategy
-        text reason
-        timestamp created_at
-    }
-
-    %% Review System
-    agent_reviews {
-        integer id PK
-        integer agent_id FK
+        integer scenario_id FK
         integer reviewer_id FK
         integer rating
-        text comment
-        boolean is_public
+        text review_text
+        jsonb pros
+        jsonb cons
+        string use_case
+        integer helpful_votes
+        integer total_votes
         timestamp created_at
-        timestamp updated_at
-    }
-
-    tool_reviews {
-        integer id PK
-        integer tool_id FK
-        integer reviewer_id FK
-        integer rating
-        text comment
-        boolean is_public
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    %% Collection System
-    collections {
-        integer id PK
-        string name
-        text description
-        boolean is_public
-        integer created_by FK
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    collection_agents {
-        integer id PK
-        integer collection_id FK
-        integer agent_id FK
-        integer order_index
-        timestamp added_at
-    }
-
-    collection_tools {
-        integer id PK
-        integer collection_id FK
-        integer tool_id FK
-        integer order_index
-        timestamp added_at
-    }
-
-    %% Template System
-    agent_templates {
-        integer id PK
-        string name
-        text description
-        jsonb template_data
-        string category
-        jsonb tags
-        boolean is_public
-        integer created_by FK
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    task_templates {
-        integer id PK
-        string name
-        text description
-        jsonb template_data
-        string category
-        jsonb tags
-        boolean is_public
-        integer created_by FK
-        timestamp created_at
-        timestamp updated_at
     }
 
     %% Relationships
-    users ||--o{ agents : creates
-    users ||--o{ tools : creates
-    users ||--o{ tasks : creates
     users ||--o{ scenarios : creates
-    users ||--o{ simulations : participates
-    users ||--o{ agent_reviews : writes
-    users ||--o{ tool_reviews : writes
-    users ||--o{ collections : creates
-    users ||--o{ agent_templates : creates
-    users ||--o{ task_templates : creates
+    users ||--o{ scenario_reviews : writes
+    users ||--o{ user_progress : tracks
 
-    agents ||--o{ tasks : assigned
-    agents ||--o{ agent_reviews : receives
-    agents ||--o{ simulation_agents : tracked
-    agents ||--o{ collection_agents : included
-    agents ||--o{ agents : remixed_from
+    scenarios ||--o{ scenario_personas : contains
+    scenarios ||--o{ scenario_scenes : contains
+    scenarios ||--o{ scenario_files : processes
+    scenarios ||--o{ scenario_reviews : receives
+    scenarios ||--o{ user_progress : simulates
 
-    tools ||--o{ tool_reviews : receives
-    tools ||--o{ collection_tools : included
-    tools ||--o{ tools : remixed_from
+    scenario_personas ||--o{ scene_personas : participates_in
+    scenario_personas ||--o{ conversation_logs : speaks_as
 
-    tasks ||--o{ simulation_tasks : tracked
-    tasks ||--o{ tasks : remixed_from
+    scenario_scenes ||--o{ scene_personas : includes
+    scenario_scenes ||--o{ scene_progress : tracks
+    scenario_scenes ||--o{ conversation_logs : contains
 
-    scenarios ||--o{ simulations : used_in
-    scenarios ||--o{ scenarios : remixed_from
-    scenarios ||--o{ crew_configurations : configured_for
+    user_progress ||--o{ scene_progress : contains
+    user_progress ||--o{ conversation_logs : records
 
-    simulations ||--o{ simulation_messages : contains
-    simulations ||--o{ simulation_agents : tracks
-    simulations ||--o{ simulation_tasks : tracks
-    simulations ||--o{ simulation_fallbacks : fallbacks
-
-    crew_configurations ||--o{ crew_members : includes
-    crew_configurations ||--o{ crew_sessions : executes
-    crew_sessions ||--o{ crew_tasks : contains
-    crew_members ||--o{ agents : references
-    crew_tasks ||--o{ agents : assigned_to
-
-    collections ||--o{ collection_agents : contains
-    collections ||--o{ collection_tools : contains
+    scene_progress ||--o{ scenario_scenes : progresses_through
+    scene_progress ||--o{ user_progress : belongs_to
 ```
 
 ## Table Definitions
@@ -395,7 +227,7 @@ erDiagram
 ### Core Tables
 
 #### Users Table
-Stores user account information with authentication and profile data.
+Stores user account information with community engagement metrics.
 
 **Fields:**
 - `id` (Primary Key) - Auto-incrementing user identifier
@@ -405,11 +237,10 @@ Stores user account information with authentication and profile data.
 - `password_hash` - Bcrypt hashed password
 - `bio` - User's biography/description
 - `avatar_url` - Profile picture URL
-- `role` - User role (user/admin)
-- `public_agents_count` - Count of public agents created
-- `public_tools_count` - Count of public tools created
-- `total_downloads` - Total downloads of user's public content
-- `reputation_score` - Community reputation score
+- `role` - User role (user/admin/teacher/student)
+- `published_scenarios` - Count of public scenarios created
+- `total_simulations` - Total simulations completed
+- `reputation_score` - Community reputation score (0.0-5.0)
 - `profile_public` - Whether profile is publicly visible
 - `allow_contact` - Whether user allows contact from others
 - `is_active` - Account active status
@@ -422,429 +253,289 @@ Stores user account information with authentication and profile data.
 - `idx_users_username` - Unique index on username
 - `idx_users_role` - Index on role for admin queries
 
-#### Agents Table
-Stores AI agent definitions with marketplace metadata.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing agent identifier
-- `name` - Agent's display name
-- `role` - Agent's role/profession
-- `goal` - Agent's primary objective
-- `backstory` - Agent's background story
-- `tools` (JSONB) - Array of tool names/configurations
-- `verbose` - Whether agent should be verbose
-- `allow_delegation` - Whether agent can delegate tasks
-- `reasoning` - Whether agent uses reasoning
-- `category` - Agent category (business, technical, creative, etc.)
-- `tags` (JSONB) - Array of searchable tags
-- `is_public` - Whether agent is publicly available
-- `is_template` - Whether agent serves as a template
-- `allow_remixes` - Whether others can remix this agent
-- `version` - Agent version string
-- `version_notes` - Version update notes
-- `usage_count` - Number of times agent has been used
-- `clone_count` - Number of times agent has been cloned
-- `average_rating` - Average user rating
-- `rating_count` - Number of ratings received
-- `created_by` (Foreign Key) - Reference to creating user
-- `remixed_from` (Foreign Key) - Reference to original agent if remixed
-- `created_at` - Creation timestamp
-- `updated_at` - Last update timestamp
-
-**Indexes:**
-- `idx_agents_created_by` - Index on creator for user queries
-- `idx_agents_category` - Index on category for filtering
-- `idx_agents_public` - Index on public flag for marketplace
-- `idx_agents_tags` - GIN index on tags for search
-
-#### Tools Table
-Stores custom tools that agents can use.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing tool identifier
-- `name` - Tool's display name
-- `description` - Tool's description and purpose
-- `tool_type` - Type of tool (api, script, service, etc.)
-- `configuration` (JSONB) - Tool configuration parameters
-- `code` - Tool implementation code
-- `language` - Programming language of tool
-- `parameters` (JSONB) - Tool parameter definitions
-- `usage_examples` - Examples of how to use the tool
-- `tags` (JSONB) - Array of searchable tags
-- `is_public` - Whether tool is publicly available
-- `is_template` - Whether tool serves as a template
-- `allow_remixes` - Whether others can remix this tool
-- `version` - Tool version string
-- `version_notes` - Version update notes
-- `usage_count` - Number of times tool has been used
-- `clone_count` - Number of times tool has been cloned
-- `average_rating` - Average user rating
-- `rating_count` - Number of ratings received
-- `created_by` (Foreign Key) - Reference to creating user
-- `remixed_from` (Foreign Key) - Reference to original tool if remixed
-- `created_at` - Creation timestamp
-- `updated_at` - Last update timestamp
-
-**Indexes:**
-- `idx_tools_created_by` - Index on creator
-- `idx_tools_tool_type` - Index on tool type
-- `idx_tools_public` - Index on public flag
-- `idx_tools_tags` - GIN index on tags
-
-#### Tasks Table
-Stores task definitions that agents can execute.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing task identifier
-- `title` - Task's title
-- `description` - Detailed task description
-- `expected_output` - Expected output description
-- `context` (JSONB) - Task context and background
-- `output_format` (JSONB) - Desired output format specifications
-- `agent_id` (Foreign Key) - Assigned agent for this task
-- `category` - Task category
-- `tags` (JSONB) - Array of searchable tags
-- `is_public` - Whether task is publicly available
-- `is_template` - Whether task serves as a template
-- `allow_remixes` - Whether others can remix this task
-- `version` - Task version string
-- `version_notes` - Version update notes
-- `usage_count` - Number of times task has been used
-- `clone_count` - Number of times task has been cloned
-- `average_rating` - Average user rating
-- `rating_count` - Number of ratings received
-- `created_by` (Foreign Key) - Reference to creating user
-- `remixed_from` (Foreign Key) - Reference to original task if remixed
-- `created_at` - Creation timestamp
-- `updated_at` - Last update timestamp
-
-**Indexes:**
-- `idx_tasks_agent_id` - Index on assigned agent
-- `idx_tasks_created_by` - Index on creator
-- `idx_tasks_category` - Index on category
-- `idx_tasks_public` - Index on public flag
-
 #### Scenarios Table
-Stores business scenarios for simulations.
+Stores business scenarios created from PDF processing or manual input.
 
 **Fields:**
 - `id` (Primary Key) - Auto-incrementing scenario identifier
 - `title` - Scenario title
 - `description` - Detailed scenario description
+- `challenge` - Main business challenge or problem
 - `industry` - Industry context
-- `challenge` - Main challenge or problem
 - `learning_objectives` (JSONB) - Array of learning objectives
-- `source_type` - Source type (manual, pdf, template)
-- `pdf_content` - Extracted PDF content if applicable
+- `source_type` - Source type (manual, pdf_upload, template)
+- `pdf_content` - Original PDF content if applicable
+- `student_role` - Role the student plays in simulation
+- `category` - Scenario category for marketplace
+- `difficulty_level` - Difficulty level (beginner, intermediate, advanced)
+- `estimated_duration` - Estimated completion time in minutes
+- `tags` (JSONB) - Array of searchable tags
+- `pdf_title` - Original PDF title
+- `pdf_source` - PDF source information
+- `processing_version` - AI processing version used
+- `rating_avg` - Average user rating (0.0-5.0)
+- `rating_count` - Number of ratings received
 - `is_public` - Whether scenario is publicly available
 - `is_template` - Whether scenario serves as a template
 - `allow_remixes` - Whether others can remix this scenario
-- `version` - Scenario version string
-- `version_notes` - Version update notes
 - `usage_count` - Number of times scenario has been used
 - `clone_count` - Number of times scenario has been cloned
-- `average_rating` - Average user rating
-- `rating_count` - Number of ratings received
 - `created_by` (Foreign Key) - Reference to creating user
-- `remixed_from` (Foreign Key) - Reference to original scenario if remixed
 - `created_at` - Creation timestamp
 - `updated_at` - Last update timestamp
 
 **Indexes:**
-- `idx_scenarios_created_by` - Index on creator
-- `idx_scenarios_industry` - Index on industry
-- `idx_scenarios_public` - Index on public flag
-- `idx_scenarios_source_type` - Index on source type
+- `idx_scenarios_created_by` - Index on creator for user queries
+- `idx_scenarios_category` - Index on category for filtering
+- `idx_scenarios_public` - Index on public flag for marketplace
+- `idx_scenarios_tags` - GIN index on tags for search
+- `idx_scenarios_industry` - Index on industry filtering
 
-### CrewAI Tables
-
-#### Crew Configurations Table
-Stores reusable crew configurations for different business scenarios.
+#### Scenario Personas Table
+Stores AI personas extracted from business case studies.
 
 **Fields:**
-- `id` (Primary Key) - Auto-incrementing crew configuration identifier
-- `name` - Crew configuration name
-- `crew_type` - Type of crew (business_launch, crisis_management, innovation, strategic_planning)
-- `description` - Detailed description of crew purpose
-- `scenario_id` (Foreign Key) - Reference to associated scenario
-- `process_type` - CrewAI process type (sequential, hierarchical, collaborative)
-- `max_iterations` - Maximum number of iterations allowed
-- `verbose_logging` - Whether to enable verbose logging
-- `allow_delegation` - Whether agents can delegate tasks
-- `memory_enabled` - Whether crew memory is enabled
-- `enabled_tools` (JSONB) - Array of enabled tool names
-- `custom_tools` (JSONB) - Custom tool configurations
+- `id` (Primary Key) - Auto-incrementing persona identifier
+- `scenario_id` (Foreign Key) - Reference to parent scenario
+- `name` - Persona's name
+- `role` - Persona's role/position in the business case
+- `background` - Detailed background information
+- `correlation` - Relationship to the business challenge
+- `primary_goals` (JSONB) - Array of persona's primary objectives
+- `personality_traits` (JSONB) - AI-generated personality traits with numerical scores
 - `created_at` - Creation timestamp
 - `updated_at` - Last update timestamp
 
-**Indexes:**
-- `idx_crew_configurations_scenario_id` - Index on scenario
-- `idx_crew_configurations_crew_type` - Index on crew type
-- `idx_crew_configurations_process_type` - Index on process type
+**Personality Traits Structure:**
+```json
+{
+  "analytical": 8,
+  "creative": 6,
+  "assertive": 7,
+  "collaborative": 9,
+  "detail_oriented": 8,
+  "risk_taking": 4,
+  "empathetic": 7,
+  "decisive": 6
+}
+```
 
-#### Crew Members Table
-Defines the agents that belong to each crew configuration.
+**Indexes:**
+- `idx_personas_scenario_id` - Index on scenario for efficient lookups
+- `idx_personas_name` - Index on name for search
+- `idx_personas_role` - Index on role for filtering
+
+#### Scenario Scenes Table
+Stores sequential learning scenes for linear simulation progression.
 
 **Fields:**
-- `id` (Primary Key) - Auto-incrementing crew member identifier
-- `crew_configuration_id` (Foreign Key) - Reference to crew configuration
-- `agent_id` (Foreign Key) - Reference to agent
-- `role_priority` - Priority/order of agent in crew
-- `can_delegate` - Whether this agent can delegate tasks
-- `is_manager` - Whether this agent is a manager in hierarchical process
-- `backstory_override` - Optional backstory override for this crew context
-- `goal_override` - Optional goal override for this crew context
+- `id` (Primary Key) - Auto-incrementing scene identifier
+- `scenario_id` (Foreign Key) - Reference to parent scenario
+- `title` - Scene title
+- `description` - Detailed scene description
+- `user_goal` - Specific learning objective for this scene
+- `scene_order` - Order in the scene sequence
+- `estimated_duration` - Estimated scene completion time in minutes
+- `max_attempts` - Maximum attempts before forced progression
+- `success_threshold` - Success threshold for goal achievement (0.0-1.0)
+- `goal_criteria` (JSONB) - AI-defined success criteria
+- `hint_triggers` (JSONB) - Conditions that trigger hints
+- `scene_context` - Additional context for ChatOrchestrator
+- `persona_instructions` (JSONB) - Specific instructions for AI personas
+- `image_url` - URL to scene visualization image
+- `image_prompt` - AI prompt used to generate scene image
 - `created_at` - Creation timestamp
-
-**Indexes:**
-- `idx_crew_members_crew_configuration_id` - Index on crew configuration
-- `idx_crew_members_agent_id` - Index on agent
-- `idx_crew_members_role_priority` - Index on role priority
-
-#### Crew Sessions Table
-Tracks active crew execution sessions.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing crew session identifier
-- `crew_configuration_id` (Foreign Key) - Reference to crew configuration
-- `simulation_session_id` (Foreign Key) - Reference to simulation session
-- `session_type` - Type of session (full_collaboration, task_based, exploratory)
-- `status` - Session status (active, paused, completed, failed)
-- `total_iterations` - Total number of iterations executed
-- `current_agent_turn` - Current agent's turn in the process
-- `crew_output` (JSONB) - Final crew output/results
-- `individual_contributions` (JSONB) - Individual agent contributions
-- `collaboration_metrics` (JSONB) - Metrics about collaboration quality
-- `started_at` - Session start timestamp
-- `completed_at` - Session completion timestamp
-
-**Indexes:**
-- `idx_crew_sessions_crew_configuration_id` - Index on crew configuration
-- `idx_crew_sessions_simulation_session_id` - Index on simulation session
-- `idx_crew_sessions_status` - Index on status
-
-#### Crew Tasks Table
-Tracks individual tasks executed within crew sessions.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing crew task identifier
-- `crew_session_id` (Foreign Key) - Reference to crew session
-- `task_name` - Name of the task
-- `description` - Detailed task description
-- `expected_output` - Expected output description
-- `assigned_agent_id` (Foreign Key) - Reference to assigned agent
-- `depends_on_tasks` (JSONB) - Array of task IDs this task depends on
-- `status` - Task status (pending, in_progress, completed, failed)
-- `agent_output` - Agent's output for this task
-- `execution_time_seconds` - Time taken to execute task
-- `tools_used` (JSONB) - Array of tools used during task execution
-- `created_at` - Task creation timestamp
-- `completed_at` - Task completion timestamp
-
-**Indexes:**
-- `idx_crew_tasks_crew_session_id` - Index on crew session
-- `idx_crew_tasks_assigned_agent_id` - Index on assigned agent
-- `idx_crew_tasks_status` - Index on status
-
-#### Tool Registry Table
-Manages the registry of available tools for crews.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing tool registry identifier
-- `name` (Unique) - Tool name/identifier
-- `display_name` - Human-readable tool name
-- `description` - Tool description and capabilities
-- `category` - Tool category (analysis, communication, data, finance, etc.)
-- `tool_class` - Python class name for the tool
-- `tool_module` - Python module path for the tool
-- `configuration_schema` (JSONB) - JSON schema for tool configuration
-- `is_enabled` - Whether tool is enabled for use
-- `is_community_contributed` - Whether tool is contributed by community
-- `contributor_info` (JSONB) - Information about community contributor
-- `usage_count` - Number of times tool has been used
-- `last_used` - Last time tool was used
-- `created_at` - Tool registration timestamp
 - `updated_at` - Last update timestamp
 
+**Goal Criteria Structure:**
+```json
+{
+  "key_topics_covered": ["market analysis", "competitive positioning"],
+  "interaction_requirements": ["engage with marketing director", "review financial data"],
+  "success_indicators": ["demonstrates understanding", "asks relevant questions"]
+}
+```
+
 **Indexes:**
-- `idx_tool_registry_name` - Unique index on tool name
-- `idx_tool_registry_category` - Index on category
-- `idx_tool_registry_is_enabled` - Index on enabled status
-- `idx_tool_registry_is_community_contributed` - Index on community contribution
+- `idx_scenes_scenario_id` - Index on scenario
+- `idx_scenes_order` - Index on scene order for sequence queries
 
-### Simulation Tables
-
-#### Simulations Table
-Stores simulation instances and execution metadata.
+#### Scene Personas Junction Table
+Many-to-many relationship between scenes and personas.
 
 **Fields:**
-- `id` (Primary Key) - Auto-incrementing simulation identifier
+- `scene_id` (Foreign Key) - Reference to scene
+- `persona_id` (Foreign Key) - Reference to persona
+- `involvement_level` - Level of persona involvement (key, participant, mentioned)
+- `created_at` - Creation timestamp
+
+### Linear Simulation System Tables
+
+#### User Progress Table
+Tracks user progress through linear simulations with ChatOrchestrator state.
+
+**Fields:**
+- `id` (Primary Key) - Auto-incrementing progress identifier
+- `user_id` (Foreign Key) - Reference to user
 - `scenario_id` (Foreign Key) - Reference to scenario being simulated
-- `user_id` (Foreign Key) - Reference to user running simulation
-- `crew_configuration` (JSONB) - Crew setup configuration
-- `process_type` - CrewAI process type (sequential, hierarchical)
-- `status` - Simulation status (ready, running, completed, failed, failed_missing_resources)
-- `completion_summary` - Summary of simulation results
-- `fallback_log` (JSONB) - Log of fallback strategies used
+- `current_scene_id` (Foreign Key) - Current scene in progression
+- `simulation_status` - Current status (not_started, in_progress, completed, abandoned)
+- `scenes_completed` (JSONB) - Array of completed scene IDs
+- `total_attempts` - Total attempts across all scenes
+- `hints_used` - Total hints used in simulation
+- `forced_progressions` - Number of forced scene progressions
+- `orchestrator_data` (JSONB) - ChatOrchestrator state and context
+- `completion_percentage` - Overall completion percentage (0.0-100.0)
+- `total_time_spent` - Total time spent in seconds
+- `session_count` - Number of simulation sessions
+- `final_score` - Final simulation score (0.0-100.0)
 - `started_at` - Simulation start timestamp
 - `completed_at` - Simulation completion timestamp
+- `last_activity` - Last user activity timestamp
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+
+**Orchestrator Data Structure:**
+```json
+{
+  "current_turn": 15,
+  "max_turns": 20,
+  "system_prompt_version": "2.1",
+  "persona_states": {
+    "wanjohi": {
+      "engagement_level": "high",
+      "topics_discussed": ["seasonal contracts", "market expansion"]
+    }
+  },
+  "scene_context": {
+    "key_points_covered": ["crisis assessment", "financial impact"],
+    "user_understanding_level": 0.75
+  }
+}
+```
+
+**Indexes:**
+- `idx_user_progress_user_id` - Index on user
+- `idx_user_progress_scenario_id` - Index on scenario
+- `idx_user_progress_status` - Index on simulation status
+
+#### Scene Progress Table
+Detailed tracking of progress within individual scenes.
+
+**Fields:**
+- `id` (Primary Key) - Auto-incrementing scene progress identifier
+- `user_progress_id` (Foreign Key) - Reference to overall user progress
+- `scene_id` (Foreign Key) - Reference to scene
+- `status` - Scene status (not_started, in_progress, completed, failed)
+- `attempts` - Number of attempts for this scene
+- `hints_used` - Hints used in this scene
+- `goal_achieved` - Whether scene goal was achieved
+- `forced_progression` - Whether progression was forced due to max attempts
+- `time_spent` - Time spent in this scene (seconds)
+- `messages_sent` - Number of user messages sent
+- `ai_responses` - Number of AI responses received
+- `goal_achievement_score` - AI-assessed goal achievement score (0.0-1.0)
+- `interaction_quality` - Quality of user interactions (0.0-1.0)
+- `scene_feedback` - AI-generated feedback for the scene
+- `started_at` - Scene start timestamp
+- `completed_at` - Scene completion timestamp
 - `created_at` - Creation timestamp
 - `updated_at` - Last update timestamp
 
 **Indexes:**
-- `idx_simulations_scenario_id` - Index on scenario
-- `idx_simulations_user_id` - Index on user
-- `idx_simulations_status` - Index on status
+- `idx_scene_progress_user_progress_id` - Index on user progress
+- `idx_scene_progress_scene_id` - Index on scene
+- `idx_scene_progress_status` - Index on status
 
-#### Simulation Messages Table
-Stores conversation history between users and AI crews.
+#### Conversation Logs Table
+Complete conversation history for ChatOrchestrator interactions.
 
 **Fields:**
-- `id` (Primary Key) - Auto-incrementing message identifier
-- `simulation_id` (Foreign Key) - Reference to simulation
-- `user_message` - User's input message
-- `crew_response` - AI crew's response
-- `created_at` - Message timestamp
+- `id` (Primary Key) - Auto-incrementing conversation log identifier
+- `user_progress_id` (Foreign Key) - Reference to user progress
+- `scene_id` (Foreign Key) - Reference to scene
+- `message_type` - Type of message (user, ai_persona, system, hint)
+- `sender_name` - Name of message sender
+- `persona_id` (Foreign Key) - Reference to persona if AI message
+- `message_content` - Full message content
+- `message_order` - Order of message in conversation
+- `attempt_number` - Scene attempt number when message was sent
+- `is_hint` - Whether message was a hint
+- `ai_context_used` (JSONB) - AI context and prompt information
+- `ai_model_version` - AI model version used
+- `processing_time` - AI processing time in seconds
+- `user_reaction` - Categorized user reaction (positive, negative, neutral)
+- `led_to_progress` - Whether message led to scene progression
+- `timestamp` - Message timestamp
+
+**AI Context Structure:**
+```json
+{
+  "system_prompt_version": "2.1",
+  "persona_context": {
+    "name": "Wanjohi",
+    "current_mood": "concerned",
+    "topics_aware_of": ["seasonal contracts", "financial pressure"]
+  },
+  "scene_context": {
+    "turn_number": 8,
+    "user_understanding": 0.6,
+    "key_points_needed": ["market diversification", "risk mitigation"]
+  }
+}
+```
 
 **Indexes:**
-- `idx_simulation_messages_simulation_id` - Index on simulation
-- `idx_simulation_messages_created_at` - Index on timestamp
+- `idx_conversation_logs_user_progress_id` - Index on user progress
+- `idx_conversation_logs_scene_id` - Index on scene
+- `idx_conversation_logs_timestamp` - Index on timestamp for chronological queries
 
-### Resource Tracking Tables
+### Supporting Tables
 
-#### Simulation Agents Table
-Tracks which agents are used in each simulation with snapshots.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing identifier
-- `simulation_id` (Foreign Key) - Reference to simulation
-- `agent_id` (Foreign Key) - Reference to agent
-- `agent_snapshot` (JSONB) - Agent configuration at execution time
-- `status` - Agent status (active, missing, substituted)
-- `created_at` - Creation timestamp
-
-#### Simulation Tasks Table
-Tracks which tasks are used in each simulation with snapshots.
+#### Scenario Files Table
+Tracks uploaded PDF files and processing status.
 
 **Fields:**
-- `id` (Primary Key) - Auto-incrementing identifier
-- `simulation_id` (Foreign Key) - Reference to simulation
-- `task_id` (Foreign Key) - Reference to task
-- `task_snapshot` (JSONB) - Task configuration at execution time
-- `status` - Task status (active, missing, substituted)
-- `created_at` - Creation timestamp
+- `id` (Primary Key) - Auto-incrementing file identifier
+- `scenario_id` (Foreign Key) - Reference to scenario
+- `file_path` - Path to stored file
+- `file_size` - File size in bytes
+- `file_type` - File type (application/pdf)
+- `original_content` - Original extracted text content
+- `processed_content` - AI-processed and structured content
+- `processing_status` - Status (pending, processing, completed, failed)
+- `processing_log` (JSONB) - Detailed processing log and errors
+- `uploaded_at` - File upload timestamp
+- `processed_at` - Processing completion timestamp
 
-#### Simulation Fallbacks Table
-Tracks fallback strategies used when resources are missing.
+**Processing Log Structure:**
+```json
+{
+  "llamaparse_status": "success",
+  "openai_analysis": "completed",
+  "personas_extracted": 3,
+  "scenes_generated": 5,
+  "processing_time": 45.2,
+  "errors": [],
+  "warnings": ["Low confidence on persona background for John Smith"]
+}
+```
 
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing identifier
-- `simulation_id` (Foreign Key) - Reference to simulation
-- `resource_type` - Type of missing resource (agent, task, tool)
-- `original_resource_id` - ID of missing resource
-- `fallback_resource_id` - ID of substitute resource (if any)
-- `fallback_strategy` - Strategy used (substitute, skip, fail)
-- `reason` - Reason for fallback
-- `created_at` - Creation timestamp
-
-### Review and Rating Tables
-
-#### Agent Reviews Table
-Stores user reviews and ratings for agents.
+#### Scenario Reviews Table
+Community reviews and ratings for scenarios.
 
 **Fields:**
 - `id` (Primary Key) - Auto-incrementing review identifier
-- `agent_id` (Foreign Key) - Reference to agent being reviewed
+- `scenario_id` (Foreign Key) - Reference to scenario being reviewed
 - `reviewer_id` (Foreign Key) - Reference to reviewing user
 - `rating` - Numerical rating (1-5)
-- `comment` - Review comment
-- `is_public` - Whether review is publicly visible
+- `review_text` - Detailed review text
+- `pros` (JSONB) - Array of positive aspects
+- `cons` (JSONB) - Array of negative aspects
+- `use_case` - Specific use case or context
+- `helpful_votes` - Number of helpful votes
+- `total_votes` - Total votes received
 - `created_at` - Review creation timestamp
-- `updated_at` - Last update timestamp
-
-**Indexes:**
-- `idx_agent_reviews_agent_id` - Index on agent
-- `idx_agent_reviews_reviewer_id` - Index on reviewer
-- `idx_agent_reviews_rating` - Index on rating
-
-#### Tool Reviews Table
-Stores user reviews and ratings for tools.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing review identifier
-- `tool_id` (Foreign Key) - Reference to tool being reviewed
-- `reviewer_id` (Foreign Key) - Reference to reviewing user
-- `rating` - Numerical rating (1-5)
-- `comment` - Review comment
-- `is_public` - Whether review is publicly visible
-- `created_at` - Review creation timestamp
-- `updated_at` - Last update timestamp
-
-### Collection Tables
-
-#### Collections Table
-Stores user-created collections of agents and tools.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing collection identifier
-- `name` - Collection name
-- `description` - Collection description
-- `is_public` - Whether collection is publicly visible
-- `created_by` (Foreign Key) - Reference to creating user
-- `created_at` - Creation timestamp
-- `updated_at` - Last update timestamp
-
-#### Collection Agents Table
-Junction table for collections and agents.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing identifier
-- `collection_id` (Foreign Key) - Reference to collection
-- `agent_id` (Foreign Key) - Reference to agent
-- `order_index` - Order of agent in collection
-- `added_at` - Timestamp when agent was added
-
-#### Collection Tools Table
-Junction table for collections and tools.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing identifier
-- `collection_id` (Foreign Key) - Reference to collection
-- `tool_id` (Foreign Key) - Reference to tool
-- `order_index` - Order of tool in collection
-- `added_at` - Timestamp when tool was added
-
-### Template Tables
-
-#### Agent Templates Table
-Stores reusable agent templates.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing template identifier
-- `name` - Template name
-- `description` - Template description
-- `template_data` (JSONB) - Template configuration data
-- `category` - Template category
-- `tags` (JSONB) - Array of searchable tags
-- `is_public` - Whether template is publicly available
-- `created_by` (Foreign Key) - Reference to creating user
-- `created_at` - Creation timestamp
-- `updated_at` - Last update timestamp
-
-#### Task Templates Table
-Stores reusable task templates.
-
-**Fields:**
-- `id` (Primary Key) - Auto-incrementing template identifier
-- `name` - Template name
-- `description` - Template description
-- `template_data` (JSONB) - Template configuration data
-- `category` - Template category
-- `tags` (JSONB) - Array of searchable tags
-- `is_public` - Whether template is publicly available
-- `created_by` (Foreign Key) - Reference to creating user
-- `created_at` - Creation timestamp
-- `updated_at` - Last update timestamp
 
 ## Database Constraints
 
@@ -860,89 +551,95 @@ Stores reusable task templates.
 ### Unique Constraints
 - `users.email` - Unique email addresses
 - `users.username` - Unique usernames
-- `agent_reviews(agent_id, reviewer_id)` - One review per agent per user
-- `tool_reviews(tool_id, reviewer_id)` - One review per tool per user
+- `scenario_reviews(scenario_id, reviewer_id)` - One review per scenario per user
 
 ### Check Constraints
-- `agent_reviews.rating` - Between 1 and 5
-- `tool_reviews.rating` - Between 1 and 5
+- `scenario_reviews.rating` - Between 1 and 5
 - `users.reputation_score` - Between 0.0 and 5.0
-- `simulations.status` - Valid status values
+- `scene_progress.goal_achievement_score` - Between 0.0 and 1.0
+- `user_progress.completion_percentage` - Between 0.0 and 100.0
 
 ### JSONB Constraints
 - All JSONB fields have proper validation for structure
 - Tags arrays contain only string values
-- Configuration objects follow defined schemas
+- Personality traits contain numerical values between 0-10
+- Learning objectives are arrays of strings
 
 ## Indexes
 
 ### Performance Indexes
-- `idx_agents_created_by` - Fast user agent queries
-- `idx_agents_category` - Category filtering
-- `idx_agents_public` - Public agent marketplace
-- `idx_agents_tags` - GIN index for tag searching
-- `idx_scenarios_industry` - Industry filtering
-- `idx_simulations_user_id` - User simulation history
-- `idx_simulation_messages_simulation_id` - Message history queries
+- `idx_scenarios_created_by` - Fast user scenario queries
+- `idx_scenarios_category` - Category filtering for marketplace
+- `idx_scenarios_public` - Public scenario marketplace queries
+- `idx_user_progress_user_id` - User simulation history
+- `idx_conversation_logs_timestamp` - Chronological message queries
+- `idx_scene_progress_status` - Scene completion tracking
 
 ### Search Indexes
-- `idx_agents_name_trgm` - Trigram index for name search
-- `idx_tools_name_trgm` - Trigram index for tool search
-- `idx_scenarios_title_trgm` - Trigram index for scenario search
+- `idx_scenarios_tags` - GIN index for tag-based search
+- `idx_personas_name_trgm` - Trigram index for persona name search
+- `idx_scenarios_title_trgm` - Trigram index for scenario title search
 
 ### Composite Indexes
-- `idx_agents_public_category` - Public agents by category
-- `idx_simulations_user_status` - User simulations by status
-- `idx_reviews_agent_rating` - Agent reviews by rating
+- `idx_scenarios_public_category` - Public scenarios by category
+- `idx_user_progress_user_status` - User simulations by status
+- `idx_scene_progress_scene_status` - Scene progress tracking
 
 ## Data Types
 
 ### Custom Types
-- `user_role` - ENUM ('user', 'admin')
-- `simulation_status` - ENUM ('ready', 'running', 'completed', 'failed', 'failed_missing_resources')
-- `fallback_strategy` - ENUM ('substitute', 'skip', 'fail')
-- `source_type` - ENUM ('manual', 'pdf', 'template')
+- `user_role` - ENUM ('user', 'admin', 'teacher', 'student')
+- `simulation_status` - ENUM ('not_started', 'in_progress', 'completed', 'abandoned')
+- `scene_status` - ENUM ('not_started', 'in_progress', 'completed', 'failed')
+- `message_type` - ENUM ('user', 'ai_persona', 'system', 'hint')
+- `source_type` - ENUM ('manual', 'pdf_upload', 'template')
 
 ### JSONB Structures
 
-#### Agent Tools Format
+#### Learning Objectives Format
 ```json
 [
-  {
-    "name": "web_search",
-    "config": {
-      "api_key": "SERPER_API_KEY",
-      "results_limit": 10
-    }
-  }
+  "Analyze market dynamics and competitive landscape",
+  "Develop strategic recommendations for business growth",
+  "Evaluate financial implications of strategic decisions"
 ]
 ```
 
-#### Scenario Learning Objectives Format
-```json
-[
-  "Understanding market dynamics",
-  "Developing pricing strategies",
-  "Analyzing competitive landscape"
-]
-```
-
-#### Crew Configuration Format
+#### Personality Traits Format
 ```json
 {
-  "process": "sequential",
-  "max_iterations": 5,
-  "memory": true,
-  "verbose": true
+  "analytical": 8,
+  "creative": 6,
+  "assertive": 7,
+  "collaborative": 9,
+  "detail_oriented": 8,
+  "risk_taking": 4,
+  "empathetic": 7,
+  "decisive": 6
+}
+```
+
+#### Scenes Completed Format
+```json
+[1, 3, 5, 7]
+```
+
+#### Goal Criteria Format
+```json
+{
+  "key_topics": ["market analysis", "financial planning"],
+  "required_interactions": ["@ceo", "@cfo"],
+  "success_threshold": 0.75,
+  "completion_indicators": ["demonstrates understanding", "asks strategic questions"]
 }
 ```
 
 ## Security Considerations
 
 ### Data Protection
-- All passwords are hashed using bcrypt
+- All user passwords are hashed using bcrypt
 - JWT tokens have expiration times
-- Sensitive data is not logged
+- Sensitive conversation data is encrypted at rest
 - User data respects privacy settings
 
 ### Access Control
@@ -959,59 +656,62 @@ Stores reusable task templates.
 ## Backup and Recovery
 
 ### Backup Strategy
-- Daily full database backups
-- Continuous WAL archiving
-- Point-in-time recovery capability
-- Cross-region backup replication
+- Daily full database backups with point-in-time recovery
+- Continuous WAL archiving for transaction log backup
+- Automated backup validation and integrity checks
+- Cross-region backup replication for disaster recovery
 
 ### Recovery Procedures
-- Automated backup validation
-- Recovery time objectives (RTO): 4 hours
-- Recovery point objectives (RPO): 1 hour
-- Disaster recovery testing monthly
+- Automated backup validation and testing
+- Recovery time objectives (RTO): 2 hours
+- Recovery point objectives (RPO): 15 minutes
+- Monthly disaster recovery testing and validation
 
 ## Performance Optimization
 
 ### Query Optimization
 - Appropriate indexes on frequently queried columns
-- JSONB GIN indexes for tag and configuration searches
+- JSONB GIN indexes for complex data searches
 - Composite indexes for common filter combinations
 - Regular VACUUM and ANALYZE operations
 
 ### Partitioning Strategy
-- Large tables partitioned by date (simulation_messages)
+- Large tables partitioned by date (conversation_logs)
+- User-based partitioning for user_progress table
 - Archive old data to separate partitions
-- Automated partition management
+- Automated partition management and cleanup
 
 ### Connection Pooling
-- PgBouncer for connection management
-- Connection limits based on load
-- Monitoring connection usage
+- PgBouncer for connection management and pooling
+- Connection limits based on application load
+- Monitoring connection usage and optimization
 
 ## Monitoring and Maintenance
 
 ### Database Monitoring
-- Query performance tracking
-- Index usage analysis
-- Lock contention monitoring
-- Connection pool metrics
+- Query performance tracking and optimization
+- Index usage analysis and maintenance
+- Lock contention monitoring and resolution
+- Connection pool metrics and tuning
 
 ### Maintenance Tasks
-- Regular VACUUM operations
-- Index maintenance and rebuilding
-- Statistics updates
-- Log rotation and cleanup
+- Regular VACUUM operations for table maintenance
+- Index maintenance and rebuilding as needed
+- Statistics updates for query optimization
+- Log rotation and cleanup procedures
 
 ## Migration Strategy
 
 ### Schema Changes
-- Alembic for database migrations
-- Backward compatibility considerations
-- Zero-downtime deployment support
-- Rollback procedures
+- Alembic for database migrations with version control
+- Backward compatibility considerations for API changes
+- Zero-downtime deployment support for production
+- Rollback procedures for failed migrations
 
 ### Data Migration
-- Batch processing for large datasets
-- Progress tracking and resumption
-- Data validation and verification
-- Fallback strategies for failed migrations 
+- Batch processing for large dataset migrations
+- Progress tracking and resumption capabilities
+- Data validation and verification procedures
+- Fallback strategies for failed migrations
+
+This database schema provides a robust foundation for the AI Agent Education Platform, supporting PDF-to-simulation pipeline, linear simulation experiences, ChatOrchestrator integration, and community marketplace features. The schema is designed to scale efficiently while maintaining data integrity and supporting complex educational simulation workflows. 

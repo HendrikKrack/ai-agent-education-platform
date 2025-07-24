@@ -23,7 +23,7 @@ export default function Marketplace() {
   const [scenarios, setScenarios] = useState<Scenario[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [favorites, setFavorites] = useState<Set<number>>(new Set())
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
   const categories = [
     "All",
@@ -76,7 +76,7 @@ export default function Marketplace() {
                          agent.backstory.toLowerCase().includes(searchQuery.toLowerCase())
     
     const matchesCategory = selectedCategory === 'all' || 
-                           agent.category.toLowerCase() === selectedCategory.toLowerCase()
+                           (agent.category && agent.category.toLowerCase() === selectedCategory.toLowerCase())
     
     return matchesSearch && matchesCategory
   })
@@ -84,15 +84,15 @@ export default function Marketplace() {
   const filteredScenarios = scenarios.filter(scenario => {
     const matchesSearch = scenario.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          scenario.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         scenario.industry.toLowerCase().includes(searchQuery.toLowerCase())
+                         (scenario.industry && scenario.industry.toLowerCase().includes(searchQuery.toLowerCase()))
     
     const matchesCategory = selectedCategory === 'all' || 
-                           scenario.industry.toLowerCase() === selectedCategory.toLowerCase()
+                           (scenario.industry && scenario.industry.toLowerCase() === selectedCategory.toLowerCase())
     
     return matchesSearch && matchesCategory
   })
 
-  const toggleFavorite = (id: number) => {
+  const toggleFavorite = (id: string) => {
     const newFavorites = new Set(favorites)
     if (newFavorites.has(id)) {
       newFavorites.delete(id)
@@ -107,7 +107,10 @@ export default function Marketplace() {
       // Create a copy of the agent
       const clonedAgent = await apiClient.createAgent({
         name: `${agent.name} (Clone)`,
+        description: agent.description,
         role: agent.role,
+        personality: agent.personality,
+        expertise: agent.expertise,
         goal: agent.goal,
         backstory: agent.backstory,
         tools: agent.tools,
@@ -121,6 +124,7 @@ export default function Marketplace() {
         allow_remixes: agent.allow_remixes,
         version: '1.0.0',
         version_notes: `Cloned from ${agent.name}`,
+        clone_count: 0,
       })
       
       // Navigate to agent builder to edit the cloned agent
@@ -276,7 +280,7 @@ export default function Marketplace() {
                             <span className="text-gray-400">Role: {agent.role}</span>
                             <div className="flex items-center space-x-1">
                               <Star className="h-3 w-3 fill-current text-yellow-500" />
-                              <span>{agent.average_rating.toFixed(1)}</span>
+                              <span>{(agent.average_rating || 0).toFixed(1)}</span>
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-1">
@@ -347,7 +351,7 @@ export default function Marketplace() {
                             <span className="text-gray-400">Role: {agent.role}</span>
                             <div className="flex items-center space-x-1">
                               <Star className="h-3 w-3 fill-current text-yellow-500" />
-                              <span>{agent.average_rating.toFixed(1)}</span>
+                              <span>{(agent.average_rating || 0).toFixed(1)}</span>
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-1">

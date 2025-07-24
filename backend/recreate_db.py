@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from sqlalchemy.orm import sessionmaker
 from database import engine
-from models import Base
+from database.models import Base
 
 def recreate_tables():
     """Drop all tables and recreate them"""

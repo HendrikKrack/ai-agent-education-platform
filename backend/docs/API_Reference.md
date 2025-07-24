@@ -1,8 +1,8 @@
-# CrewAI Agent Builder Platform - Complete API Reference
+# AI Agent Education Platform - Complete API Reference
 
 ## Overview
 
-The CrewAI Agent Builder Platform provides a comprehensive REST API for managing users, AI agents, business scenarios, and simulations. This API enables developers to build powerful applications on top of our community-driven platform.
+The AI Agent Education Platform provides a comprehensive REST API for managing users, AI agents, business scenarios, and **linear simulation experiences**. The platform now features an integrated **ChatOrchestrator** system that manages multi-scene simulations with AI persona interactions, enabling immersive educational experiences through PDF-to-simulation pipelines.
 
 **Base URL:** `http://localhost:8000`
 **API Version:** 2.0.0
@@ -14,12 +14,13 @@ The CrewAI Agent Builder Platform provides a comprehensive REST API for managing
 
 1. [Authentication](#authentication)
 2. [User Management](#user-management)
-3. [Agent Management](#agent-management)
-4. [Scenario Management](#scenario-management)
-5. [Simulation Management](#simulation-management)
-6. [System Endpoints](#system-endpoints)
-7. [Error Handling](#error-handling)
-8. [Rate Limiting](#rate-limiting)
+3. [Scenario Management](#scenario-management)
+4. [PDF Processing & AI Analysis](#pdf-processing--ai-analysis)
+5. [Linear Simulation System](#linear-simulation-system)
+6. [Chat Orchestrator](#chat-orchestrator)
+7. [Publishing & Marketplace](#publishing--marketplace)
+8. [System Endpoints](#system-endpoints)
+9. [Error Handling](#error-handling)
 
 ---
 
@@ -45,11 +46,7 @@ Register a new user account.
   "email": "user@example.com",
   "full_name": "John Doe",
   "username": "johndoe",
-  "password": "securepassword123",
-  "bio": "AI enthusiast and educator",
-  "avatar_url": "https://example.com/avatar.jpg",
-  "profile_public": true,
-  "allow_contact": true
+  "password": "securepassword123"
 }
 ```
 
@@ -60,26 +57,11 @@ Register a new user account.
   "email": "user@example.com",
   "full_name": "John Doe",
   "username": "johndoe",
-  "bio": "AI enthusiast and educator",
-  "avatar_url": "https://example.com/avatar.jpg",
   "role": "user",
-  "public_agents_count": 0,
-  "public_tools_count": 0,
-  "total_downloads": 0,
-  "reputation_score": 0.0,
-  "profile_public": true,
-  "allow_contact": true,
   "is_active": true,
-  "is_verified": false,
-  "created_at": "2025-01-06T12:00:00Z",
-  "updated_at": "2025-01-06T12:00:00Z"
+  "created_at": "2025-01-06T12:00:00Z"
 }
 ```
-
-**Status Codes:**
-- `200` - Success
-- `400` - Email already registered or username taken
-- `422` - Validation error
 
 ### User Login
 
@@ -110,11 +92,6 @@ Authenticate user and receive JWT token.
 }
 ```
 
-**Status Codes:**
-- `200` - Success
-- `401` - Invalid credentials
-- `400` - Account deactivated
-
 ---
 
 ## User Management
@@ -125,11 +102,6 @@ Authenticate user and receive JWT token.
 
 Get the authenticated user's profile information.
 
-**Headers:**
-```
-Authorization: Bearer <jwt_token>
-```
-
 **Response:**
 ```json
 {
@@ -137,211 +109,13 @@ Authorization: Bearer <jwt_token>
   "email": "user@example.com",
   "full_name": "John Doe",
   "username": "johndoe",
-  "bio": "AI enthusiast and educator",
   "role": "user",
-  "public_agents_count": 5,
-  "total_downloads": 150,
-  "reputation_score": 4.2,
-  "profile_public": true,
-  "created_at": "2025-01-06T12:00:00Z"
-}
-```
-
-### Update Current User Profile
-
-**`PUT /users/me`** 🔒
-
-Update the authenticated user's profile.
-
-**Request Body:**
-```json
-{
-  "full_name": "John Smith",
-  "bio": "Updated bio",
-  "profile_public": false
-}
-```
-
-### Change Password
-
-**`POST /users/me/change-password`** 🔒
-
-Change the authenticated user's password.
-
-**Request Body:**
-```json
-{
-  "current_password": "oldpassword123",
-  "new_password": "newpassword456"
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Password changed successfully"
-}
-```
-
-### Get User Profile (Public)
-
-**`GET /users/{user_id}`**
-
-Get a user's public profile information.
-
-**Parameters:**
-- `user_id` (integer) - User ID
-
-**Response:**
-```json
-{
-  "id": 1,
-  "username": "johndoe",
-  "full_name": "John Doe",
-  "bio": "AI enthusiast and educator",
-  "public_agents_count": 5,
+  "published_scenarios": 5,
+  "total_simulations": 12,
   "reputation_score": 4.2,
   "created_at": "2025-01-06T12:00:00Z"
 }
 ```
-
-**Status Codes:**
-- `200` - Success
-- `403` - Private profile (not accessible)
-- `404` - User not found
-
-### Get All Users (Admin Only)
-
-**`GET /users/`** 🔒👑
-
-Get list of all users (admin access required).
-
-**Query Parameters:**
-- `skip` (integer, optional) - Number of records to skip (default: 0)
-- `limit` (integer, optional) - Number of records to return (default: 100)
-
----
-
-## Agent Management
-
-### Create Agent
-
-**`POST /agents/`**
-
-Create a new AI agent.
-
-**Request Body:**
-```json
-{
-  "name": "Marketing Specialist",
-  "role": "Senior Marketing Analyst",
-  "goal": "Analyze market trends and create comprehensive marketing strategies",
-  "backstory": "An expert in digital marketing with 10+ years of experience...",
-  "tools": ["web_search", "data_analysis", "report_generator"],
-  "verbose": true,
-  "allow_delegation": false,
-  "reasoning": true,
-  "category": "business",
-  "tags": ["marketing", "analysis", "strategy"],
-  "is_public": true,
-  "is_template": false,
-  "allow_remixes": true,
-  "version": "1.0.0",
-  "version_notes": "Initial release",
-  "created_by": 1
-}
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "name": "Marketing Specialist",
-  "role": "Senior Marketing Analyst",
-  "goal": "Analyze market trends and create comprehensive marketing strategies",
-  "backstory": "An expert in digital marketing...",
-  "tools": ["web_search", "data_analysis", "report_generator"],
-  "verbose": true,
-  "allow_delegation": false,
-  "reasoning": true,
-  "category": "business",
-  "tags": ["marketing", "analysis", "strategy"],
-  "is_public": true,
-  "usage_count": 0,
-  "clone_count": 0,
-  "average_rating": 0.0,
-  "rating_count": 0,
-  "version": "1.0.0",
-  "created_by": 1,
-  "created_at": "2025-01-06T12:00:00Z",
-  "updated_at": "2025-01-06T12:00:00Z"
-}
-```
-
-### Get All Agents
-
-**`GET /agents/`**
-
-Get list of all available agents.
-
-**Response:**
-```json
-[
-  {
-    "id": 1,
-    "name": "Marketing Specialist",
-    "role": "Senior Marketing Analyst",
-    "category": "business",
-    "tags": ["marketing", "analysis"],
-    "is_public": true,
-    "usage_count": 25,
-    "average_rating": 4.5,
-    "created_at": "2025-01-06T12:00:00Z"
-  }
-]
-```
-
-### Get Agent by ID
-
-**`GET /agents/{agent_id}`**
-
-Get detailed information about a specific agent.
-
-**Parameters:**
-- `agent_id` (integer) - Agent ID
-
-### Update Agent
-
-**`PUT /agents/{agent_id}`** 🔒
-
-Update an existing agent (owner or admin only).
-
-**Request Body:**
-```json
-{
-  "name": "Updated Marketing Specialist",
-  "tools": ["web_search", "data_analysis", "report_generator", "social_media"]
-}
-```
-
-### Delete Agent
-
-**`DELETE /agents/{agent_id}`** 🔒
-
-Delete an agent (owner or admin only).
-
-**Response:**
-```json
-{
-  "message": "Agent deleted successfully"
-}
-```
-
-### Get User's Agents
-
-**`GET /agents/user/{user_id}`**
-
-Get all agents created by a specific user.
 
 ---
 
@@ -349,9 +123,9 @@ Get all agents created by a specific user.
 
 ### Create Scenario
 
-**`POST /scenarios/`**
+**`POST /scenarios/`** 🔒
 
-Create a new business scenario.
+Create a new business scenario manually.
 
 **Request Body:**
 ```json
@@ -365,12 +139,8 @@ Create a new business scenario.
     "Customer acquisition strategies",
     "Technology stack decisions"
   ],
-  "source_type": "manual",
-  "pdf_content": null,
-  "is_public": true,
-  "is_template": false,
-  "allow_remixes": true,
-  "created_by": 1
+  "student_role": "Product Manager",
+  "source_type": "manual"
 }
 ```
 
@@ -387,10 +157,9 @@ Create a new business scenario.
     "Customer acquisition strategies",
     "Technology stack decisions"
   ],
+  "student_role": "Product Manager",
   "source_type": "manual",
-  "is_public": true,
-  "usage_count": 0,
-  "clone_count": 0,
+  "is_public": false,
   "created_by": 1,
   "created_at": "2025-01-06T12:00:00Z"
 }
@@ -402,118 +171,382 @@ Create a new business scenario.
 
 Get list of all available scenarios.
 
+**Query Parameters:**
+- `skip` (integer, optional) - Number of records to skip (default: 0)
+- `limit` (integer, optional) - Number of records to return (default: 100)
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "title": "E-commerce Platform Launch",
+    "description": "Launch a new e-commerce platform...",
+    "industry": "Technology",
+    "is_public": true,
+    "usage_count": 25,
+    "created_at": "2025-01-06T12:00:00Z"
+  }
+]
+```
+
 ### Get Scenario by ID
 
 **`GET /scenarios/{scenario_id}`**
 
-Get detailed information about a specific scenario.
+Get detailed information about a specific scenario including personas and scenes.
+
+**Response:**
+```json
+{
+  "id": 1,
+  "title": "E-commerce Platform Launch",
+  "description": "Launch a new e-commerce platform...",
+  "industry": "Technology",
+  "challenge": "Compete with established players...",
+  "learning_objectives": ["Market analysis", "Customer acquisition"],
+  "student_role": "Product Manager",
+  "personas": [
+    {
+      "id": 1,
+      "name": "Sarah Chen",
+      "role": "Marketing Director",
+      "background": "10+ years in digital marketing...",
+      "personality_traits": {
+        "analytical": 8,
+        "creative": 7,
+        "assertive": 6
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "id": 1,
+      "title": "Market Analysis Meeting",
+      "description": "Initial market research discussion...",
+      "user_goal": "Understand target market segments",
+      "scene_order": 1,
+      "image_url": "https://example.com/scene1.jpg"
+    }
+  ]
+}
+```
 
 ---
 
-## Simulation Management
+## PDF Processing & AI Analysis
 
-### Start Simulation
+### Upload and Process PDF
 
-**`POST /simulations/`**
+**`POST /api/parse-pdf/`**
 
-Start a new CrewAI simulation with a specific scenario.
+Upload a PDF case study and process it with AI to extract scenarios, personas, and scenes.
+
+**Request:**
+- **Content-Type:** `multipart/form-data`
+- **file:** PDF file (required)
+- **context_files:** Additional context files (optional)
+- **save_to_db:** Boolean to save results (default: false)
+- **user_id:** User ID (default: 1)
+
+**Example using curl:**
+```bash
+curl -X POST "http://localhost:8000/api/parse-pdf/" \
+  -F "file=@business_case.pdf" \
+  -F "context_files=@additional_context.txt" \
+  -F "save_to_db=true" \
+  -F "user_id=1"
+```
+
+**Response:**
+```json
+{
+  "status": "completed",
+  "scenario_id": 15,
+  "ai_result": {
+    "title": "KasKazi Network Ltd – Distributing to the Bottom of the Pyramid",
+    "description": "This case examines the challenges faced by KasKazi Network...",
+    "student_role": "Business Strategy Consultant",
+    "key_figures": [
+      {
+        "name": "Wanjohi",
+        "role": "Founder/CEO of KasKazi Network",
+        "background": "Entrepreneur with deep market knowledge...",
+        "correlation": "Primary decision maker facing strategic challenges",
+        "primary_goals": [
+          "Achieve year-round business operations",
+          "Build sustainable competitive advantage",
+          "Expand market reach"
+        ],
+        "personality_traits": {
+          "analytical": 9,
+          "creative": 7,
+          "assertive": 8,
+          "collaborative": 6,
+          "detail_oriented": 8
+        }
+      }
+    ],
+    "scenes": [
+      {
+        "title": "Crisis Assessment Meeting",
+        "description": "Emergency meeting to assess seasonal contract challenges...",
+        "user_goal": "Understand the scope and impact of seasonal dependency",
+        "sequence_order": 1,
+        "image_url": "https://generated-image-url.com/scene1.jpg"
+      }
+    ],
+    "learning_outcomes": [
+      "1. Analyze business model sustainability challenges",
+      "2. Evaluate market entry strategies for emerging markets",
+      "3. Develop solutions for supply chain continuity"
+    ]
+  }
+}
+```
+
+**Status Codes:**
+- `200` - PDF processed successfully
+- `400` - Invalid file format or missing file
+- `500` - Processing error (LlamaParse or OpenAI issues)
+
+---
+
+## Linear Simulation System
+
+### Start Linear Simulation
+
+**`POST /api/simulation/start`**
+
+Start a new linear simulation with ChatOrchestrator integration.
+
+**Request Body:**
+```json
+{
+  "scenario_id": 1,
+  "user_id": 1
+}
+```
+
+**Response:**
+```json
+{
+  "user_progress_id": 123,
+  "scenario": {
+    "id": 1,
+    "title": "KasKazi Network Strategic Challenge",
+    "description": "Navigate seasonal contract dependencies...",
+    "challenge": "Develop sustainable business model",
+    "industry": "Distribution",
+    "learning_objectives": [
+      "Analyze market dynamics",
+      "Develop strategic solutions"
+    ],
+    "student_role": "Business Strategy Consultant"
+  },
+  "current_scene": {
+    "id": 1,
+    "scenario_id": 1,
+    "title": "Crisis Assessment Meeting",
+    "description": "Emergency meeting in the boardroom...",
+    "user_goal": "Assess scope of seasonal dependency crisis",
+    "scene_order": 1,
+    "estimated_duration": 30,
+    "image_url": "https://example.com/scene1.jpg",
+    "personas": [
+      {
+        "id": 1,
+        "name": "Wanjohi",
+        "role": "Founder/CEO",
+        "background": "Experienced entrepreneur...",
+        "personality_traits": {
+          "analytical": 9,
+          "assertive": 8
+        }
+      }
+    ]
+  },
+  "simulation_status": "waiting_for_begin"
+}
+```
+
+### Linear Chat with Orchestrator
+
+**`POST /api/simulation/linear-chat`**
+
+Send a message to the ChatOrchestrator for linear simulation experience.
 
 **Request Body:**
 ```json
 {
   "scenario_id": 1,
   "user_id": 1,
-  "crew_configuration": {
-    "process": "sequential"
-  },
-  "process_type": "sequential"
+  "scene_id": 1,
+  "message": "begin"
 }
 ```
 
 **Response:**
 ```json
 {
-  "simulation_id": 1,
-  "scenario": {
-    "id": 1,
-    "title": "E-commerce Platform Launch",
-    "description": "Launch a new e-commerce platform...",
-    "industry": "Technology",
-    "challenge": "Compete with established players..."
-  },
-  "status": "ready",
-  "message": "Simulation started! Send your first message to interact with the crew."
+  "message": "# KasKazi Network Strategic Challenge\n\nWelcome to this multi-scene simulation where you'll navigate complex business challenges...\n\n**Scene 1 — Crisis Assessment Meeting**\n\n*You're in the main conference room with senior leadership, reviewing urgent seasonal contract issues...*\n\n**Objective:** Assess the scope and impact of seasonal dependency\n\n**Active Participants:**\n• @wanjohi: Wanjohi (Founder/CEO)\n\n*You have 20 turns to achieve the objective.*\n\n**@wanjohi:** Welcome to our emergency strategy session. As you can see from the reports, our seasonal contract model is creating significant gaps in our operations. What's your initial assessment of our situation?",
+  "scene_id": 1,
+  "scene_completed": false,
+  "next_scene_id": null
 }
 ```
 
-### Chat with Crew
+**Special Commands:**
+- `"begin"` - Start the simulation
+- `"help"` - Get available commands and current status
+- `@mention` - Interact with specific personas (e.g., `@wanjohi`)
 
-**`POST /simulations/{simulation_id}/chat/`**
+### Chat with Business Simulation (Legacy)
 
-Send a message to the AI crew and receive responses.
+**`POST /api/simulate/`**
 
-**Parameters:**
-- `simulation_id` (integer) - Simulation ID
+Legacy endpoint for phase-based business simulations.
 
 **Request Body:**
 ```json
 {
-  "message": "What should be our first step in market analysis?"
+  "user_input": "What should be our market entry strategy?",
+  "phase": {
+    "title": "Market Analysis",
+    "goal": "Complete comprehensive market analysis",
+    "deliverables": ["Market size analysis", "Competitor mapping"]
+  },
+  "case_study": {
+    "title": "E-commerce Launch",
+    "description": "Launch strategy for new platform",
+    "characters": [
+      {
+        "name": "Marketing Director",
+        "role": "Senior Marketing Lead"
+      }
+    ]
+  },
+  "attempts": 0
 }
 ```
 
 **Response:**
 ```json
 {
-  "simulation_id": 1,
-  "user_message": "What should be our first step in market analysis?",
-  "crew_response": "Based on the e-commerce platform launch scenario, I recommend starting with competitive analysis. We should identify the top 5 competitors, analyze their pricing strategies, user experience, and market positioning...",
-  "timestamp": "2025-01-06T12:30:00Z"
+  "ai_response": "**Marketing Director:** Based on our analysis, I recommend a three-phased approach...\n\n**Hint →** Consider analyzing customer acquisition costs for each segment."
 }
 ```
 
-**Status Codes:**
-- `200` - Success
-- `400` - Simulation not active
-- `404` - Simulation not found
+---
 
-### Get Simulation History
+## Chat Orchestrator
 
-**`GET /simulations/{simulation_id}/history/`**
+The ChatOrchestrator manages linear simulation experiences with multi-scene progression and AI persona interactions.
 
-Get the complete conversation history for a simulation.
+### Orchestrator Features
+
+1. **Scene Management** - Automatic progression through predefined scenes
+2. **Persona Interactions** - Dynamic AI character responses based on personality
+3. **Goal Tracking** - Monitors objective completion and provides hints
+4. **State Management** - Maintains simulation state across sessions
+5. **Command System** - Built-in commands (begin, help, @mentions)
+
+### Orchestrator System Prompt Structure
+
+The orchestrator uses a comprehensive system prompt that includes:
+- Current scenario and scene context
+- Available AI personas with personalities
+- Scene objectives and success criteria
+- Turn limits and progression rules
+- Command handling (begin, help, @mentions)
+
+### Scene Progression Logic
+
+```javascript
+// Scene advances when:
+// 1. Success criteria met (determined by LLM)
+// 2. Turn limit reached (timeout)
+// 3. Manual progression command
+
+if (scene_completed || turns_remaining <= 0) {
+  advance_to_next_scene();
+}
+```
+
+---
+
+## Publishing & Marketplace
+
+### Publish Scenario
+
+**`POST /api/publishing/publish-scenario`** 🔒
+
+Publish a scenario to the public marketplace.
+
+**Request Body:**
+```json
+{
+  "scenario_id": 1,
+  "category": "business_strategy",
+  "difficulty_level": "intermediate",
+  "estimated_duration": 60,
+  "tags": ["strategy", "market_analysis", "decision_making"]
+}
+```
 
 **Response:**
 ```json
 {
-  "simulation_id": 1,
+  "message": "Scenario published successfully",
   "scenario": {
     "id": 1,
     "title": "E-commerce Platform Launch",
-    "description": "Launch a new e-commerce platform..."
-  },
-  "messages": [
-    {
-      "id": 1,
-      "user_message": "What should be our first step?",
-      "crew_response": "Based on the scenario, I recommend...",
-      "timestamp": "2025-01-06T12:30:00Z"
-    }
-  ],
-  "status": "running"
+    "is_public": true,
+    "category": "business_strategy",
+    "difficulty_level": "intermediate",
+    "published_at": "2025-01-06T12:00:00Z"
+  }
 }
 ```
 
-### Complete Simulation
+### Get Marketplace Scenarios
 
-**`POST /simulations/{simulation_id}/complete/`**
+**`GET /api/publishing/marketplace`**
 
-Mark a simulation as completed.
+Get published scenarios from the marketplace.
+
+**Query Parameters:**
+- `category` (string, optional) - Filter by category
+- `difficulty` (string, optional) - Filter by difficulty level
+- `search` (string, optional) - Search in titles and descriptions
+- `page` (integer, optional) - Page number (default: 1)
+- `page_size` (integer, optional) - Items per page (default: 20)
 
 **Response:**
 ```json
 {
-  "message": "Simulation completed successfully"
+  "scenarios": [
+    {
+      "id": 1,
+      "title": "E-commerce Platform Launch",
+      "description": "Strategic launch simulation...",
+      "category": "business_strategy",
+      "difficulty_level": "intermediate",
+      "estimated_duration": 60,
+      "tags": ["strategy", "market_analysis"],
+      "rating_avg": 4.5,
+      "rating_count": 23,
+      "usage_count": 156,
+      "created_by": {
+        "username": "business_prof",
+        "full_name": "Dr. Sarah Johnson"
+      }
+    }
+  ],
+  "total": 45,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 3
 }
 ```
 
@@ -531,9 +564,14 @@ Check the system health and status.
 ```json
 {
   "status": "healthy",
-  "framework": "CrewAI",
-  "platform": "Agent Builder Community",
-  "version": "2.0.0"
+  "framework": "FastAPI",
+  "platform": "AI Agent Education Platform",
+  "version": "2.0.0",
+  "database": "connected",
+  "ai_services": {
+    "openai": "connected",
+    "llamaparse": "connected"
+  }
 }
 ```
 
@@ -546,18 +584,33 @@ Get basic API information.
 **Response:**
 ```json
 {
-  "message": "CrewAI Agent Builder Platform - Build, Share, Simulate",
-  "version": "2.0.0"
+  "message": "AI Agent Education Platform - PDF to Simulation Pipeline",
+  "version": "2.0.0",
+  "features": [
+    "PDF Processing with AI Analysis",
+    "Linear Simulation with ChatOrchestrator", 
+    "Multi-Scene Progression",
+    "AI Persona Interactions",
+    "Marketplace Publishing"
+  ]
 }
 ```
+
+### API Documentation
+
+**`GET /docs`**
+
+Interactive API documentation (Swagger UI).
+
+**`GET /redoc`**
+
+Alternative API documentation (ReDoc).
 
 ---
 
 ## Error Handling
 
 ### Standard Error Response Format
-
-All API errors follow a consistent format:
 
 ```json
 {
@@ -571,43 +624,196 @@ All API errors follow a consistent format:
 
 - **200** - Success
 - **201** - Created
-- **400** - Bad Request (validation error, business logic error)
+- **400** - Bad Request (validation error, missing file)
 - **401** - Unauthorized (authentication required)
 - **403** - Forbidden (insufficient permissions)
-- **404** - Not Found
+- **404** - Not Found (scenario, user, scene not found)
 - **422** - Unprocessable Entity (request format error)
-- **500** - Internal Server Error
+- **500** - Internal Server Error (AI processing, database error)
 
-### Error Examples
+### Specific Error Examples
 
-**Validation Error (422):**
+**PDF Processing Error (500):**
 ```json
 {
-  "detail": [
-    {
-      "loc": ["body", "email"],
-      "msg": "field required",
-      "type": "value_error.missing"
-    }
-  ]
+  "detail": "Failed to parse PDF: LlamaParse service unavailable",
+  "error_code": "PDF_PROCESSING_ERROR",
+  "timestamp": "2025-01-06T12:00:00Z"
 }
 ```
 
-**Authentication Error (401):**
+**Simulation Not Found (404):**
 ```json
 {
-  "detail": "Could not validate credentials",
-  "headers": {
-    "WWW-Authenticate": "Bearer"
+  "detail": "No active simulation found for user",
+  "error_code": "SIMULATION_NOT_FOUND",
+  "timestamp": "2025-01-06T12:00:00Z"
+}
+```
+
+**Scene Progression Error (400):**
+```json
+{
+  "detail": "Simulation not properly initialized with orchestrator data",
+  "error_code": "ORCHESTRATOR_NOT_INITIALIZED",
+  "timestamp": "2025-01-06T12:00:00Z"
+}
+```
+
+---
+
+## Integration Examples
+
+### Python SDK Example
+
+```python
+import requests
+
+class AIEducationClient:
+    def __init__(self, base_url="http://localhost:8000", token=None):
+        self.base_url = base_url
+        self.token = token
+        self.session = requests.Session()
+        if token:
+            self.session.headers.update({
+                'Authorization': f'Bearer {token}'
+            })
+    
+    def upload_pdf_case_study(self, pdf_path, save_to_db=True):
+        """Upload and process PDF case study"""
+        with open(pdf_path, 'rb') as f:
+            files = {'file': f}
+            data = {'save_to_db': save_to_db, 'user_id': 1}
+            response = self.session.post(
+                f'{self.base_url}/api/parse-pdf/',
+                files=files,
+                data=data
+            )
+        return response.json()
+    
+    def start_linear_simulation(self, scenario_id, user_id=1):
+        """Start a new linear simulation"""
+        return self.session.post(
+            f'{self.base_url}/api/simulation/start',
+            json={
+                'scenario_id': scenario_id,
+                'user_id': user_id
+            }
+        ).json()
+    
+    def chat_with_orchestrator(self, scenario_id, user_id, scene_id, message):
+        """Send message to ChatOrchestrator"""
+        return self.session.post(
+            f'{self.base_url}/api/simulation/linear-chat',
+            json={
+                'scenario_id': scenario_id,
+                'user_id': user_id,
+                'scene_id': scene_id,
+                'message': message
+            }
+        ).json()
+
+# Usage Example
+client = AIEducationClient()
+
+# 1. Upload and process PDF case study
+pdf_result = client.upload_pdf_case_study('harvard_case.pdf', save_to_db=True)
+scenario_id = pdf_result['scenario_id']
+
+# 2. Start linear simulation
+simulation = client.start_linear_simulation(scenario_id)
+scene_id = simulation['current_scene']['id']
+
+# 3. Begin simulation
+begin_response = client.chat_with_orchestrator(
+    scenario_id, 1, scene_id, "begin"
+)
+
+# 4. Interact with personas
+response = client.chat_with_orchestrator(
+    scenario_id, 1, scene_id, "@wanjohi What are the main challenges?"
+)
+
+print(response['message'])
+```
+
+### JavaScript/Node.js Example
+
+```javascript
+class AIEducationClient {
+  constructor(baseUrl = 'http://localhost:8000', token = null) {
+    this.baseUrl = baseUrl;
+    this.token = token;
+  }
+
+  async uploadPDFCaseStudy(pdfFile, saveToDb = true) {
+    const formData = new FormData();
+    formData.append('file', pdfFile);
+    formData.append('save_to_db', saveToDb);
+    formData.append('user_id', '1');
+
+    const response = await fetch(`${this.baseUrl}/api/parse-pdf/`, {
+      method: 'POST',
+      body: formData,
+      headers: this.token ? { Authorization: `Bearer ${this.token}` } : {}
+    });
+    return response.json();
+  }
+
+  async startLinearSimulation(scenarioId, userId = 1) {
+    const response = await fetch(`${this.baseUrl}/api/simulation/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(this.token && { Authorization: `Bearer ${this.token}` })
+      },
+      body: JSON.stringify({
+        scenario_id: scenarioId,
+        user_id: userId
+      })
+    });
+    return response.json();
+  }
+
+  async chatWithOrchestrator(scenarioId, userId, sceneId, message) {
+    const response = await fetch(`${this.baseUrl}/api/simulation/linear-chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(this.token && { Authorization: `Bearer ${this.token}` })
+      },
+      body: JSON.stringify({
+        scenario_id: scenarioId,
+        user_id: userId,
+        scene_id: sceneId,
+        message: message
+      })
+    });
+    return response.json();
   }
 }
-```
 
-**Permission Error (403):**
-```json
-{
-  "detail": "Not enough permissions"
-}
+// Usage Example
+const client = new AIEducationClient();
+
+// Upload PDF and start simulation
+const pdfFile = document.getElementById('pdf-input').files[0];
+const pdfResult = await client.uploadPDFCaseStudy(pdfFile, true);
+const scenarioId = pdfResult.scenario_id;
+
+const simulation = await client.startLinearSimulation(scenarioId);
+const sceneId = simulation.current_scene.id;
+
+// Begin and interact
+const beginResponse = await client.chatWithOrchestrator(
+  scenarioId, 1, sceneId, "begin"
+);
+
+const chatResponse = await client.chatWithOrchestrator(
+  scenarioId, 1, sceneId, "@wanjohi What should be our first priority?"
+);
+
+console.log(chatResponse.message);
 ```
 
 ---
@@ -615,9 +821,10 @@ All API errors follow a consistent format:
 ## Rate Limiting
 
 ### Default Limits
-- **Authentication endpoints:** 5 requests per minute per IP
-- **General API endpoints:** 100 requests per minute per user
-- **Simulation endpoints:** 10 concurrent simulations per user
+- **PDF Processing:** 5 uploads per hour per user
+- **Simulation endpoints:** 100 requests per minute per user
+- **Chat endpoints:** 60 messages per minute per simulation
+- **General API endpoints:** 1000 requests per hour per user
 
 ### Rate Limit Headers
 ```
@@ -628,145 +835,31 @@ X-RateLimit-Reset: 1625097600
 
 ---
 
-## SDKs and Integration
+## Changelog
 
-### Python SDK Example
+### Version 2.0.0 (Current)
+- ✅ **ChatOrchestrator Integration** - Linear simulation flow with multi-scene progression
+- ✅ **PDF-to-Simulation Pipeline** - AI-powered case study processing
+- ✅ **Enhanced Persona System** - Rich AI character interactions with personality traits
+- ✅ **Scene Management** - Visual scene progression with AI-generated images
+- ✅ **Publishing System** - Marketplace for sharing scenarios
+- ✅ **Improved Error Handling** - Comprehensive error responses and logging
 
-```python
-import requests
-
-class CrewAIClient:
-    def __init__(self, base_url, token=None):
-        self.base_url = base_url
-        self.token = token
-        self.session = requests.Session()
-        if token:
-            self.session.headers.update({
-                'Authorization': f'Bearer {token}'
-            })
-    
-    def login(self, email, password):
-        response = self.session.post(
-            f'{self.base_url}/users/login',
-            json={'email': email, 'password': password}
-        )
-        data = response.json()
-        self.token = data['access_token']
-        self.session.headers.update({
-            'Authorization': f'Bearer {self.token}'
-        })
-        return data
-    
-    def create_agent(self, agent_data):
-        return self.session.post(
-            f'{self.base_url}/agents/',
-            json=agent_data
-        ).json()
-    
-    def start_simulation(self, scenario_id, user_id=None):
-        return self.session.post(
-            f'{self.base_url}/simulations/',
-            json={
-                'scenario_id': scenario_id,
-                'user_id': user_id,
-                'crew_configuration': {'process': 'sequential'},
-                'process_type': 'sequential'
-            }
-        ).json()
-
-# Usage
-client = CrewAIClient('http://localhost:8000')
-client.login('user@example.com', 'password')
-simulation = client.start_simulation(scenario_id=1)
-```
-
-### JavaScript/Node.js Example
-
-```javascript
-class CrewAIClient {
-  constructor(baseUrl, token = null) {
-    this.baseUrl = baseUrl;
-    this.token = token;
-  }
-
-  async request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(this.token && { Authorization: `Bearer ${this.token}` }),
-      ...options.headers
-    };
-
-    const response = await fetch(url, { ...options, headers });
-    return response.json();
-  }
-
-  async login(email, password) {
-    const data = await this.request('/users/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
-    });
-    this.token = data.access_token;
-    return data;
-  }
-
-  async createAgent(agentData) {
-    return this.request('/agents/', {
-      method: 'POST',
-      body: JSON.stringify(agentData)
-    });
-  }
-
-  async startSimulation(scenarioId, userId = null) {
-    return this.request('/simulations/', {
-      method: 'POST',
-      body: JSON.stringify({
-        scenario_id: scenarioId,
-        user_id: userId,
-        crew_configuration: { process: 'sequential' },
-        process_type: 'sequential'
-      })
-    });
-  }
-}
-
-// Usage
-const client = new CrewAIClient('http://localhost:8000');
-await client.login('user@example.com', 'password');
-const simulation = await client.startSimulation(1);
-```
-
----
-
-## Webhooks (Coming Soon)
-
-Future versions will support webhooks for real-time notifications:
-
-- `simulation.completed` - When a simulation finishes
-- `agent.shared` - When an agent is made public
-- `user.verified` - When a user verifies their email
-
----
-
-## API Versioning
-
-The API uses URL-based versioning. Current version is `v2` (default).
-
-Future versions will be available at:
-- `http://localhost:8000/v2/` (current)
-- `http://localhost:8000/v3/` (future)
+### Version 1.0.0 (Legacy)
+- Basic agent and scenario management
+- Simple simulation execution
+- User authentication and profiles
 
 ---
 
 ## Support
 
 For API support and questions:
-- **Documentation:** [GitHub Repository](https://github.com/your-repo)
+- **Documentation:** [GitHub Repository](https://github.com/HendrikKrack/ai-agent-education-platform)
 - **Issues:** Create an issue on GitHub
-- **Community:** Join our Discord server
+- **Integration Guide:** See `CHAT_ORCHESTRATOR_INTEGRATION.md`
 
 ---
 
 **Legend:**
-- 🔒 = Authentication required
-- 👑 = Admin access required 
+- 🔒 = Authentication required 
