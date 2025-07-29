@@ -17,7 +17,7 @@ It's people like you that make this project a great tool for educators and stude
 
 ## 📜 Code of Conduct
 
-This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
+This project and everyone participating in it is governed by our Code of Conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
 
 ## 🚀 Getting Started
 
